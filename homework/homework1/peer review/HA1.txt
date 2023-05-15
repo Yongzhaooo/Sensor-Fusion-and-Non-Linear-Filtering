@@ -1,0 +1,212 @@
+% HA1
+clc
+clear all
+
+%% 1c
+clf
+mu = [0;10];
+
+sigma = [0.3, 0;
+         0  , 8];
+
+A = [1  ,0.5;
+     0  ,1  ];
+
+npoints = 1000; 
+
+q = sigmaEllipse2D( mu, sigma, 1, npoints);
+
+z = sigmaEllipse2D( A*mu, A*sigma*A', 1, npoints);
+
+muu2 = A*mu;
+%plot of q
+plot(q(1,:),q(2,:))
+hold on
+plot(mu(1),mu(2),'.')
+hold on
+
+%plot of z
+plot(z(1,:),z(2,:))
+hold on
+plot(muu2(1),muu2(2),'.')
+
+%% 2a
+clc
+clf
+A = 3;
+mu_x = 0;
+Sigma_x = 2;
+N = 100000;
+b = 0;
+f = @(x) A*x;
+
+[mu_y_approx, Sigma_y_approx, y_s_values] = approxGaussianTransform(mu_x, Sigma_x, f, N); % Aproximation
+[mu_y, var_y] = affineGaussianTransform(mu_x, Sigma_x, A, b) % Analytical
+
+
+y_exact = normpdf(-20:.1:20,mu_y, sqrt(var_y)); % normal dist
+histogram(y_s_values,'Normalization','pdf')
+hold on
+plot(-20:.1:20,y_exact)
+hold on
+
+
+%% 2b
+clc
+clf
+A = 3;
+mu_x = 0;
+Sigma_x = 2;
+N = 100000;
+b = 0;
+f = @(x) x^3;
+
+[mu_y_approx, Sigma_y_approx, y_s_values] = approxGaussianTransform(mu_x, Sigma_x, f, N); % Aproximation
+
+histogram(y_s_values,'Normalization','pdf')
+hold on
+
+%% 3ea lin
+clc
+clf
+N = 100000;
+A = 3;
+Sigma_r = 1;
+uni = unidrnd(500,1,N) %uniformed dist
+hx = A*uni;             %Hx linear
+y = hx +  normrnd(0, Sigma_r,[1,N]); %y
+
+figure(1)
+subplot(3,1,1)
+histogram(uni,'Normalization','pdf')
+hold on
+subplot(3,1,2)
+histogram(hx,'Normalization','pdf')
+hold on
+subplot(3,1,3)
+histogram(y,'Normalization','pdf')
+hold on
+
+%% 3ea non
+clc
+clf
+N = 1000000;
+Sigma_r = 1;
+uni = unidrnd(500,1,N) %uniformed dist
+for i = 1:1:length(uni)
+    hx = uni(i)^3;      %Hx non-linear
+end
+y = hx +  normrnd(0, Sigma_r,[1,N]); %y
+
+figure(1)
+subplot(3,1,1)
+histogram(uni,'Normalization','pdf')
+hold on
+subplot(3,1,2)
+histogram(hx,'Normalization','pdf')
+hold on
+subplot(3,1,3)
+histogram(y,'Normalization','pdf')
+hold on
+
+%% 3eb lin and non lin
+clc
+clf
+Sigma_r = 1;
+A = 1;
+b = 0;
+[mu_y, var_y] = affineGaussianTransform(0, Sigma_r, A, b); % Analytically
+y_exact = normpdf(-5:.1:5,mu_y, sqrt(var_y)); % the normal dist
+
+plot(-5:.1:5,y_exact)
+
+%% 3ec P(y)
+clc
+clf
+N = 100000;
+A = 3;
+Sigma_r = 1;
+uni = unidrnd(500,1,N) %uniform dist
+hx = A*uni;             % linear hx
+y = hx +  normrnd(0, Sigma_r,[1,N]); % y
+
+figure(1)
+subplot(3,1,1)
+histogram(uni,'Normalization','pdf')
+hold on
+subplot(3,1,2)
+histogram(hx,'Normalization','pdf')
+hold on
+subplot(3,1,3)
+histogram(y,'Normalization','pdf')
+hold on
+
+%% 3ec P(y|x)
+clc
+clf
+Sigma_r = 1;
+A = 1;
+b = 0;
+[mu_y, var_y] = affineGaussianTransform(0, Sigma_r, A, b); % Analytically
+y_exact = normpdf(-5:.1:5,mu_y, sqrt(var_y)); % normal dist
+
+plot(-5:.1:5,y_exact)
+
+%% 3ed P(y)
+clc
+clf
+N = 100000;
+A = 3;
+Sigma_r = 1;
+uni = normrnd(1,1,[1,N]);   % normal dist
+hx = A*uni;                 % linear hx
+y = hx +  normrnd(0, Sigma_r,[1,N]); % y
+
+figure(1)
+subplot(3,1,1)
+histogram(uni,'Normalization','pdf')
+hold on
+subplot(3,1,2)
+histogram(hx,'Normalization','pdf')
+hold on
+subplot(3,1,3)
+histogram(y,'Normalization','pdf')
+hold on
+
+%% 3ed P(y|x)
+
+clc
+clf
+Sigma_r = 1;
+A = 1;
+b = 0;
+[mu_y, var_y] = affineGaussianTransform(0, Sigma_r, A, b); % Analytically 
+y_exact = normpdf(-5:.1:5,mu_y, sqrt(var_y)); % norma dist
+
+plot(-5:.1:5,y_exact)
+
+%% 4a 
+clc
+clf
+N = 100000;
+Sigma_r = 0.5;
+unitheata = unidrnd(2,1,N); %uniform dist with eirher 1 or 2
+uniW = normrnd(0, Sigma_r,[1,N]);  %norm dist
+for i = 1:1:length(unitheata) % changing the 2 to a -1
+    if unitheata(i) == 2
+    unitheata(i) = -1;
+    end
+end
+y = unitheata + uniW; % y
+
+figure(1)
+subplot(3,1,1)
+histogram(unitheata,'Normalization','pdf')
+hold on
+subplot(3,1,2)
+histogram(uniW,'Normalization','pdf')
+hold on
+subplot(3,1,3)
+histogram(y,'Normalization','pdf')
+hold on
+

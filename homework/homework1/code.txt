@@ -1,0 +1,144 @@
+%1c
+clear;
+clc;
+mu=[0;10];
+sigma=[0.3,0;0,8];
+A=[1,0.5;0,1];
+b=[0;0];
+
+[muz, sigmaz]=affineGaussianTransform(mu,sigma,A,b);
+xy = sigmaEllipse2D(mu, sigma);
+z = sigmaEllipse2D(muz,sigmaz);
+%Now plot the generated points. You should see an elongated ellipse stretching from the top left corner to the bottom right. 
+figure(1);
+hold on
+axis equal
+h1 = plot(xy(1,:), xy(2,:));
+h2 = plot(z(1,:), z(2,:));
+%Set the scale of x and y axis to be the same. This should be done if the two variables are in the same domain, e.g. both are measured in meters.
+
+%Also plot a star where the mean is, and make it have the same color as the ellipse.
+plot(mu(1), mu(2), '*', 'color', h1.Color);
+plot(muz(1), muz(2), '*', 'color', h2.Color);
+
+
+
+%q2
+clear
+clc
+%parta
+
+%forx
+mu=0;
+sigma=2;
+
+%z=3x
+mucalz=3*0;
+sigmacalz=9*2;
+% [muz, sigmaz]=affineGaussianTransform(mu,sigma,3,0)
+
+% Generate a large number of samples from x
+n=10e2;
+x = normrnd(0, 2, 1, n);
+
+% Calculate the corresponding values of z
+z = x^3;
+
+% Compute the histogram of z
+bins = -30:0.5:30; % Define the bins for the histogram
+hist_z = histogram(z, bins, 'Normalization', 'pdf');
+
+% Plot the theoretical PDF of z
+z_pdf = normpdf(bins, 0, sqrt(18)); % Theoretical PDF of z
+hold on % Add the histogram to the same plot
+plot(bins, z_pdf, 'b-', 'LineWidth', 2)
+
+% Add legend and axis labels
+legend('z', 'Location', 'NorthWest')
+xlabel('Data')
+ylabel('PDF')
+title('Histogram of z (n=10e2)')
+
+
+%q2b
+clear
+clc
+%parta
+
+%forx
+mu=0;
+sigma=2;
+
+%z=3x
+mucalz=0;
+sigmacalz=24;
+% [muz, sigmaz]=affineGaussianTransform(mu,sigma,3,0)
+
+% Generate a large number of samples from x
+n=10e5;
+x = normrnd(0, 2, 1, n);
+
+% Calculate the corresponding values of z
+z = x.^3;
+
+% Compute the histogram of z
+bins = -30:0.5:30; % Define the bins for the histogram
+hist_z = histogram(z, bins, 'Normalization', 'pdf');
+
+% Plot the theoretical PDF of z
+z_pdf = normpdf(bins, 0, sqrt(24)); % Theoretical PDF of z
+hold on % Add the histogram to the same plot
+plot(bins, z_pdf, 'b-', 'LineWidth', 2)
+
+% Add legend and axis labels
+legend('z', 'Location', 'NorthWest')
+xlabel('Data')
+ylabel('PDF')
+title('Histogram of z (n=10e5)')
+
+
+
+
+%q4a
+%MMSE and MAP estimators
+clear
+clc
+% Define parameters
+sigma2 = 0.5^2;
+theta = [-1 1];
+prior = [0.5 0.5];
+
+% Simulate noisy observation of theta
+n = 3*1e3; % number of simulations
+theta_idx = randi([1 2], n, 1);
+theta_sim = theta(theta_idx);
+w_sim = sqrt(sigma2) * randn(n, 1);
+y_sim = theta_sim + w_sim;
+
+% Plot histogram of y
+histogram(y_sim, 'Normalization', 'pdf')
+hold on
+
+% Plot true density function of y
+x = -3:0.01:3;
+p_y = prior(1)*normpdf(x, -1, sqrt(sigma2)) + prior(2)*normpdf(x, 1, sqrt(sigma2));
+plot(x, p_y, 'LineWidth', 2)
+
+% Add labels and legend
+xlabel('y')
+ylabel('p(y)')
+title('Histogram of y and true density function')
+legend('Histogram of y', 'True density function')
+
+
+%bc
+f = @(y) 0.5*1/sqrt(2*pi*sigma2)*exp(-(y-1)^2/(2*sigma2))+0.5*1/sqrt(2*pi*sigma2)*exp(-(y+1)^2/(2*sigma2));
+f(0.7)
+
+q = @(theta,y) 1/sqrt(2*pi*sigma2)*exp(-(y-theta)^2/(2*sigma2));
+q(1,0.7)
+
+
+
+
+

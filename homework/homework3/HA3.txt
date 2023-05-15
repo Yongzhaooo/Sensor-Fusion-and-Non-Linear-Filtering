@@ -1,0 +1,563 @@
+clear;
+clc;
+%%1a
+T=1;
+sample_y = cell(1,3);
+sample_mean_y = cell(1,3);
+sample_cov_y = cell(1,3);
+y_hat_ekf = cell(1,3);
+y_hat_ukf = cell(1,3);
+y_hat_ckf = cell(1,3);
+P_y_ekf = cell(1,3);
+P_y_ukf = cell(1,3);
+P_y_ckf = cell(1,3);
+
+for choice = 1:3
+    switch choice
+        case 1
+            mean_x = [125; 125];
+            cov_x = [10^2 0; 0 5^2];
+        case 2
+            mean_x = [-25; 125];
+            cov_x = [10^2 0; 0 5^2];
+        case 3
+            mean_x = [60; 60];
+            cov_x = [10^2 0; 0 5^2];
+        otherwise
+            error('Invalid scenario index');
+    end
+
+    % Dual bearing measurement model parameters
+    s1 = [0; 100];
+    s2 = [100; 0];
+    noise_std = 0.1*pi/180;
+    cov_r = diag([noise_std^2 noise_std^2]);
+
+    % Set the number of samples
+    numSamples = 10000;
+
+    % Initialize variables for storing samples and calculating statistics
+    samples_y = zeros(2, numSamples);
+
+    % Loop over the number of samples
+    for i = 1:numSamples
+        % Sample the state vector x from the state density
+        x = mvnrnd(mean_x, cov_x)';
+        
+        % Compute the dual bearing measurement vector y using the state vector x
+        [y,~] = dualBearingMeasurement(x, s1, s2);
+        
+        % Add random sample noise to the measurement vector y
+        y = y + mvnrnd(zeros(2, 1), cov_r)';
+        
+        % Store the sample measurement vector y
+        samples_y(:, i) = y;
+    end
+    sample_y{choice} = samples_y;
+    sample_mean_y{choice} = mean(samples_y, 2);
+    disp(['Sample mean for case ', num2str(choice)]);
+    disp(sample_mean_y{choice});
+    sample_cov_y{choice} = cov(samples_y');
+    disp(['Sample covariance for case ', num2str(choice)]);
+    disp(sample_cov_y{choice});
+
+%%1b
+h = @(x) dualBearingMeasurement(x, s1, s2);
+[ y , ~ ] = dualBearingMeasurement (x, s1, s2);
+
+[y_hat_ekf{choice}, P_y_ekf{choice}] = MeanCovarianceY(mean_x, cov_x, y, h, cov_r, 'EKF');
+[y_hat_ukf{choice}, P_y_ukf{choice}] = MeanCovarianceY(mean_x, cov_x, y, h, cov_r, 'UKF');
+[y_hat_ckf{choice}, P_y_ckf{choice}] = MeanCovarianceY(mean_x, cov_x, y, h, cov_r, 'CKF');
+end 
+
+[xy1] = sigmaEllipse2D(sample_mean_y{1}, sample_cov_y{1},3,100);
+[xy2] = sigmaEllipse2D(sample_mean_y{2}, sample_cov_y{2},3,100);
+[xy3] = sigmaEllipse2D(sample_mean_y{3}, sample_cov_y{3},3,100);
+
+figure; clf; hold on;
+hold on;
+scatter(sample_y{1}(1,:),sample_y{1}(2,:),5,'b','filled');%sample
+plot(sample_mean_y{1}(1,:),sample_mean_y{1}(2,:),'*r','Linewidth',4);%mean
+plot(xy1(1,:),xy1(2,:),'-r','Linewidth',2);%covariance for 1
+
+plot(y_hat_ekf{1}(1,:),y_hat_ekf{1}(2,:),'*g','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ekf{1}, P_y_ekf{1},3,100);
+plot(temp(1,:),temp(2,:),'--g','Linewidth',2);
+
+plot(y_hat_ukf{1}(1,:),y_hat_ukf{1}(2,:),'*m','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ukf{1}, P_y_ukf{1},3,100);
+plot(temp(1,:),temp(2,:),'--m','Linewidth',2);
+
+plot(y_hat_ckf{1}(1,:),y_hat_ckf{1}(2,:),'*k','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ckf{1}, P_y_ckf{1},3,100);
+plot(temp(1,:),temp(2,:),'--k','Linewidth',2);
+
+legend('samples','sample mean','sample covariance','EFK mean', 'EKF covariance','UFK mean', 'UKF covariance','CFK mean', 'CKF covariance')
+
+title('Scenario 1')
+
+figure; clf; hold on;
+hold on;
+scatter(sample_y{2}(1,:),sample_y{2}(2,:),5,'b','filled');%sample
+plot(sample_mean_y{2}(1,:),sample_mean_y{2}(2,:),'*r','Linewidth',4);%mean
+plot(xy2(1,:),xy2(2,:),'-r','Linewidth',2);%covariance for 1
+
+plot(y_hat_ekf{2}(1,:),y_hat_ekf{2}(2,:),'*g','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ekf{2}, P_y_ekf{2},3,100);
+plot(temp(1,:),temp(2,:),'--g','Linewidth',2);
+
+plot(y_hat_ukf{2}(1,:),y_hat_ukf{2}(2,:),'*m','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ukf{2}, P_y_ukf{2},3,100);
+plot(temp(1,:),temp(2,:),'--m','Linewidth',2);
+
+plot(y_hat_ckf{2}(1,:),y_hat_ckf{2}(2,:),'*k','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ckf{2}, P_y_ckf{2},3,100);
+plot(temp(1,:),temp(2,:),'--k','Linewidth',2);
+
+legend('samples','sample mean','sample covariance','EFK mean', 'EKF covariance','UFK mean', 'UKF covariance','CFK mean', 'CKF covariance')
+
+title('Scenario 2')
+
+figure; clf; hold on;
+hold on;
+scatter(sample_y{3}(1,:),sample_y{3}(2,:),5,'b','filled');%sample
+plot(sample_mean_y{3}(1,:),sample_mean_y{3}(2,:),'*r','Linewidth',4);%mean
+plot(xy3(1,:),xy3(2,:),'-r','Linewidth',2);%covariance for 1
+
+plot(y_hat_ekf{3}(1,:),y_hat_ekf{3}(2,:),'*g','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ekf{3}, P_y_ekf{3},3,100);
+plot(temp(1,:),temp(2,:),'--g','Linewidth',2);
+
+plot(y_hat_ukf{3}(1,:),y_hat_ukf{3}(2,:),'*m','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ukf{3}, P_y_ukf{3},3,100);
+plot(temp(1,:),temp(2,:),'--m','Linewidth',2);
+
+plot(y_hat_ckf{3}(1,:),y_hat_ckf{3}(2,:),'*k','LineWidth',4)
+temp = sigmaEllipse2D(y_hat_ckf{3}, P_y_ckf{3},3,100);
+plot(temp(1,:),temp(2,:),'--k','Linewidth',2);
+
+legend('samples','sample mean','samp开le covariance','EFK mean', 'EKF covariance','UFK mean', 'UKF covariance','CFK mean', 'CKF covariance')
+
+title('Scenario 3')
+
+clear
+clc
+% Constants
+N = 100; % Number of time steps
+T = 1; % Sampling time
+
+% State density parameters
+x_0 = [0; 0; 20; 0; 5*pi/180];
+P_0 = diag([10^2, 10^2, 2^2, (pi/180)^2, (pi/180)^2]);
+
+% Dual bearing measurement model parameters
+s1 = [-200; 100];
+s2 = [-200; -100];
+
+% Measurement noise standard deviations for Case 1
+choice =3;
+
+
+
+   
+switch choice
+       
+        case 1
+sigma_v = 1;
+sigma_w = pi/180;
+sigma_phi1 = 2*pi/180;
+sigma_phi2 = 2*pi/180;
+        case 2
+sigma_v = 1;
+sigma_w = pi/180;
+sigma_phi1 = 2*pi/180;
+sigma_phi2 = 0.1*pi/180;
+        case 3
+sigma_v = 1;
+sigma_w = pi/180;
+sigma_phi1 = 0.1*pi/180;
+sigma_phi2 = 0.1*pi/180;
+        otherwise
+            error('Invalid scenario index');
+    end
+
+gama=[0 0; 0 0; 1 0; 0 0; 0 1];
+Q = gama *[sigma_v^2 0; 0 sigma_w^2]*gama'
+
+R = diag([sigma_phi1^2, sigma_phi2^2]);
+f = @(x) coordinatedTurnMotion(x, T) ;
+h = @(x) dualBearingMeasurement(x, s1, s2) ;
+% Generate state sequence and measurement sequence
+X = genNonLinearStateSequence(x_0, P_0, f, Q, N);
+Y = genNonLinearMeasurementSequence(X, h, R);
+
+% Apply the non-linear Kalman filters
+[xf_ekf, Pf_ekf, ~, ~] = nonLinearKalmanFilter(Y, x_0, P_0,f, Q, h, R, 'EKF');
+[xf_ukf, Pf_ukf, ~, ~] = nonLinearKalmanFilter(Y, x_0, P_0,f, Q, h, R, 'UKF');
+[xf_ckf, Pf_ckf, ~, ~] = nonLinearKalmanFilter(Y, x_0, P_0,f, Q, h, R, 'CKF');
+
+figure;
+subplot(1,3,1)
+hold on;
+%Sensor position
+plot(s1(1),s1(2),'*m','Linewidth',2);
+plot(s2(1),s2(2),'om','Linewidth',2);
+% Plot true positions
+plot(X(1,:), X(2,:), 'k-', 'LineWidth', 1.5);
+%Plot Filters states
+plot(xf_ekf(1,:), xf_ekf(2,:), 'r-', 'LineWidth', 1.5);
+
+% Plot Dual bearing measurements
+sensorx = (s2(2)-s1(2)+tan(Y(1,:))*s1(1)- tan(Y(2,:))*s2(1))./(tan(Y(1,:))- tan(Y(2,:)));
+sensory = s1(2)+tan(Y(1,:)).*(sensorx- s1(1));
+scatter(sensorx, sensory, 5,'b*', 'LineWidth',1.5)
+
+for i= 1:5:length(xf_ekf)
+        xy = sigmaEllipse2D(xf_ekf(1:2,i), Pf_ekf(1:2,1:2,i), 3, 50);
+        plot(xy(1,:),xy(2,:),'--k');
+end
+
+
+
+legend('Sensor1','Sensor2','True Position','Filtered','Measurement','5th 3\sigma ')
+subtitle('EKF')
+
+subplot(1,3,2)
+hold on;
+%Sensor position
+plot(s1(1),s1(2),'*m','Linewidth',2);
+plot(s2(1),s2(2),'om','Linewidth',2);
+% Plot true positions
+plot(X(1,:), X(2,:), 'k-', 'LineWidth', 1.5);
+%Plot Filters states
+plot(xf_ukf(1,:), xf_ukf(2,:), 'r-', 'LineWidth', 1.5);
+
+% Plot Dual bearing measurements
+sensorx = (s2(2)-s1(2)+tan(Y(1,:))*s1(1)- tan(Y(2,:))*s2(1))./(tan(Y(1,:))- tan(Y(2,:)));
+sensory = s1(2)+tan(Y(1,:)).*(sensorx- s1(1));
+scatter(sensorx, sensory, 5,'b*', 'LineWidth',1.5)
+
+for i= 1:5:length(xf_ukf)
+        xy = sigmaEllipse2D(xf_ukf(1:2,i), Pf_ukf(1:2,1:2,i), 3, 50);
+        plot(xy(1,:),xy(2,:),'--k');
+end
+
+
+
+legend('Sensor1','Sensor2','True Position','Filtered','Measurement','5th 3\sigma ')
+subtitle('UKF')
+
+subplot(1,3,3)
+hold on;
+%Sensor position
+plot(s1(1),s1(2),'*m','Linewidth',2);
+plot(s2(1),s2(2),'om','Linewidth',2);
+% Plot true positions
+plot(X(1,:), X(2,:), 'k-', 'LineWidth', 1.5);
+%Plot Filters states
+plot(xf_ckf(1,:), xf_ckf(2,:), 'r-', 'LineWidth', 1.5);
+
+% Plot Dual bearing measurements
+sensorx = (s2(2)-s1(2)+tan(Y(1,:))*s1(1)- tan(Y(2,:))*s2(1))./(tan(Y(1,:))- tan(Y(2,:)));
+sensory = s1(2)+tan(Y(1,:)).*(sensorx- s1(1));
+scatter(sensorx, sensory, 5,'b*', 'LineWidth',1.5)
+
+for i= 1:5:length(xf_ckf)
+        xy = sigmaEllipse2D(xf_ckf(1:2,i), Pf_ckf(1:2,1:2,i), 3, 50);
+        plot(xy(1,:),xy(2,:),'--k');
+end
+
+
+
+
+legend('Sensor1','Sensor2','True Position','Filtered','Measurement','5th 3\sigma ')
+subtitle('CKF')
+
+
+
+clear;
+clc;
+
+% Constants
+N = 100; % Number of time steps
+T = 1; % Sampling time
+
+% State density parameters
+x_0 = [0; 0; 20; 0; 5*pi/180];
+P_0 = diag([10^2, 10^2, 2^2, (pi/180)^2, (pi/180)^2]);
+
+% Dual bearing measurement model parameters
+s1 = [-200; 100];
+s2 = [-200; -100];
+
+% Measurement noise standard deviations for Case 1
+choice = 3;
+
+switch choice
+    case 1
+        sigma_v = 1;
+        sigma_w = pi/180;
+        sigma_phi1 = 2*pi/180;
+        sigma_phi2 = 2*pi/180;
+    case 2
+        sigma_v = 1;
+        sigma_w = pi/180;
+        sigma_phi1 = 2*pi/180;
+        sigma_phi2 = 0.1*pi/180;
+    case 3
+        sigma_v = 1;
+        sigma_w = pi/180;
+        sigma_phi1 = 0.1*pi/180;
+        sigma_phi2 = 0.1*pi/180;
+    otherwise
+        error('Invalid scenario index');
+end
+
+gama = [0 0; 0 0; 1 0; 0 0; 0 1];
+Q = gama *[sigma_v^2 0; 0 sigma_w^2]*gama';
+R = diag([sigma_phi1^2, sigma_phi2^2]);
+
+f = @(x) coordinatedTurnMotion(x, T);
+h = @(x) dualBearingMeasurement(x, s1, s2);
+
+% Monte Carlo simulation parameters
+MC = 150; % Number of state/measurement sequences
+
+% Initialize variables for storing estimation errors
+error_x_ekf = [];
+error_y_ekf = [];
+error_x_ukf = [];
+error_y_ukf = [];
+error_x_ckf = [];
+error_y_ckf = [];
+
+% Monte Carlo simulation loop
+for imc = 1:MC
+    % Simulate state sequence
+    X = genNonLinearStateSequence(x_0, P_0, f, Q, N);
+    
+    % Simulate measurements
+    Y = genNonLinearMeasurementSequence(X, h, R);
+    
+    % Run Kalman filter - EKF
+    [xf_ekf, Pf_ekf, ~, ~] = nonLinearKalmanFilter(Y, x_0, P_0, f, Q, h, R, 'EKF');
+    
+    % Run Kalman filter - UKF
+    [xf_ukf, Pf_ukf, ~, ~] = nonLinearKalmanFilter(Y, x_0, P_0, f, Q, h, R, 'UKF');
+    
+    % Run Kalman filter - CKF
+    [xf_ckf, Pf_ckf, ~, ~] = nonLinearKalmanFilter(Y, x_0, P_0, f, Q, h, R, 'CKF');
+    
+    X = X(:, 2:end);
+
+    % Calculate estimation errors
+    error_x_ekf = [error_x_ekf, X(1,:) - xf_ekf(1,:)];
+    error_y_ekf = [error_y_ekf, X(2,:) - xf_ekf(2,:)];
+    
+    % Calculate estimation errors (continued)
+    error_x_ukf = [error_x_ukf, X(1,:) - xf_ukf(1,:)];
+    error_y_ukf = [error_y_ukf, X(2,:) - xf_ukf(2,:)];
+    
+    error_x_ckf = [error_x_ckf, X(1,:) - xf_ckf(1,:)];
+    error_y_ckf = [error_y_ckf, X(2,:) - xf_ckf(2,:)];
+end
+
+% Plot histograms of estimation errors
+figure;
+subplot(2, 3, 1)
+hold on;
+histogram(error_x_ekf, 'Normalization', 'pdf');
+mu=mean(error_x_ekf)
+temp=std(error_x_ekf)
+[x,y] = normpdfi(mu, temp^2, 5 ,100);
+plot(x,y,'LineWidth',2)
+xlabel('Estimation Error (x)');
+ylabel('Probability Density');
+title('EKF - x position');
+text(min(x), max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+    'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+subplot(2, 3, 4)
+hold on;
+histogram(error_y_ekf, 'Normalization', 'pdf');
+mu=mean(error_y_ekf)
+temp=std(error_y_ekf)
+[x,y] = normpdfi(mu, temp^2, 5 ,100);
+plot(x,y,'LineWidth',2)
+xlabel('Estimation Error (y)');
+ylabel('Probability Density');
+title('EKF - y position');
+text(min(x), max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+    'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+subplot(2, 3, 2)
+hold on;
+histogram(error_x_ukf, 'Normalization', 'pdf');
+mu=mean(error_x_ukf)
+temp=std(error_x_ukf)
+[x,y] = normpdfi(mu, temp^2, 5 ,100);
+plot(x,y,'LineWidth',2)
+xlabel('Estimation Error (x)');
+ylabel('Probability Density');
+title('UKF - x position');
+text(min(x), max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+    'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+subplot(2, 3, 5)
+hold on;
+histogram(error_y_ukf, 'Normalization', 'pdf');
+mu=mean(error_y_ukf)
+temp=std(error_y_ukf)
+[x,y] = normpdfi(mu, temp^2, 5 ,100);
+plot(x,y,'LineWidth',2)
+xlabel('Estimation Error (y)');
+ylabel('Probability Density');
+title('UKF - y position');
+text(min(x), max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+    'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+subplot(2, 3, 3)
+hold on;
+histogram(error_x_ckf, 'Normalization', 'pdf');
+mu=mean(error_x_ckf)
+temp=std(error_x_ckf)
+[x,y] = normpdfi(mu, temp^2, 5 ,100);
+plot(x,y,'LineWidth',2)
+xlabel('Estimation Error (x)');
+ylabel('Probability Density');
+title('CKF - x position');
+text(min(x), max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+    'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+subplot(2, 3, 6)
+hold on;
+histogram(error_y_ckf, 'Normalization', 'pdf');
+mu=mean(error_y_ckf)
+temp=std(error_y_ckf)
+[x,y] = normpdfi(mu, temp^2, 5 ,100);
+plot(x,y,'LineWidth',2)
+xlabel('Estimation Error (y)');
+ylabel('Probability Density');
+title('CKF - y position');
+text(min(x), max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+    'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+
+
+clear;
+clc;
+close all;
+
+%Given
+T = 0.1;
+K = 600;
+omega = zeros(1,K+1);
+omega(150:450) = -pi/301/T;
+x0 = [0 0 20 0 omega(1)]';
+X = zeros(length(x0),K+1);
+X(:,1) = x0;
+for i = 2:K+1
+    X(:,i) = coordinatedTurnMotion(X(:,i-1),T);
+    X(5,i) = omega(i);
+end
+
+
+sigma_v = 1/1000;
+sigma_w = pi/180/1000;
+
+
+x_0 = [0 0 0 0 0]';
+P_0 = diag([10 10 10 5*pi/180 pi/180].^2);
+s1 = [300 -100]';
+s2 = [300 -300]';
+R = diag([pi/180 pi/180].^2);
+
+gama=[0 0; 0 0; 1 0; 0 0; 0 1];
+Q = gama *[sigma_v^2 0; 0 sigma_w^2]*gama'
+
+f = @(x) coordinatedTurnMotion(x, T) ;
+h = @(x) dualBearingMeasurement(x, s1, s2) ;
+% Generate state sequence and measurement sequence
+% X = genNonLinearStateSequence(x_0, P_0, f, Q, K);
+Y = genNonLinearMeasurementSequence(X, h, R);
+[xf,Pf,xp,Pp] = nonLinearKalmanFilter(Y,x_0,P_0,f,Q,h,R,'UKF');
+
+xm(1,:) = ( s2(2)-s1(2) + tan(Y(1,:))*s1(1) - tan(Y(2,:))*s2(1) ) ./ ( tan(Y(1,:)) - tan(Y(2,:)) );
+ym(2,:) = s1(2) + tan(Y(1,:)) .* ( xm(1,:) - s1(1) );
+
+figure;
+hold on;
+%Sensor position
+plot(s1(1),s1(2),'*m','Linewidth',2);
+plot(s2(1),s2(2),'om','Linewidth',2);
+% Plot true positions
+plot(X(1,:), X(2,:), 'k-', 'LineWidth', 1.5);
+%Plot Filters states
+plot(xf(1,:), xf(2,:), 'r-', 'LineWidth', 1.5);
+
+% Plot Dual bearing measurements
+sensorx = (s2(2)-s1(2)+tan(Y(1,:))*s1(1)- tan(Y(2,:))*s2(1))./(tan(Y(1,:))- tan(Y(2,:)));
+sensory = s1(2)+tan(Y(1,:)).*(sensorx- s1(1));
+scatter(sensorx, sensory, 5,'b*', 'LineWidth',1.5)
+
+for i= 1:5:length(xf)
+        xy = sigmaEllipse2D(xf(1:2,i), Pf(1:2,1:2,i), 3, 50);
+        plot(xy(1,:),xy(2,:),'--k');
+end
+
+
+
+legend('Sensor1','Sensor2','True Position','Filtered','Measurement','5th 3\sigma ')
+title('UKF')
+
+X=X(:,2:end);
+error_x = [X(1,:) - xf(1,:)];
+error_y = [X(2,:) - xf(2,:)];
+
+len = 1:1:600;
+
+% figure;
+% subplot(1,2,1);
+% hold on;
+% histogram(error_x, 'Normalization', 'pdf');
+% mu=mean(error_x)
+% temp=std(error_x)
+% [x,y] = normpdfi(mu, temp^2, 5 ,100);
+% plot(x,y,'LineWidth',2)
+% xlabel('Estimation Error (x)');
+% ylabel('Probability Density');
+% title('x position');
+% text(min(x)/2, max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+%     'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+% 
+% subplot(1,2,2);
+% hold on;
+% histogram(error_y, 'Normalization', 'pdf');
+% mu=mean(error_y)
+% temp=std(error_y)
+% [x,y] = normpdfi(mu, temp^2, 5 ,100);
+% plot(x,y,'LineWidth',2)
+% xlabel('Estimation Error (x)');
+% ylabel('Probability Density');
+% title('y position');
+% text(min(x)/2, max(y), sprintf('Mean: %.2f\nCov: %.2f', mu, temp^2), ...
+%     'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+% 
+
+figure;
+subplot(1,2,1);
+hold on;
+plot(len,error_x.^2,'LineWidth',2)
+xlabel('Estimation Error (x)');
+ylabel('Error Squre');
+title('x position');
+
+subplot(1,2,2);
+hold on;
+plot(len,error_y.^2,'LineWidth',2)
+xlabel('Estimation Error (y)');
+ylabel('Error Squre');
+title('y position');
+
+
+
+

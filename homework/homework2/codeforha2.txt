@@ -1,0 +1,1029 @@
+scenario1
+
+
+clear;
+clc;
+
+N=35 %length
+x_0=2; %prior mean
+P_0=8; %prior covariance
+
+P=zeros(1,N);
+
+Q=1.5; %motion noise covariance
+R=3; %measurement noise covariance
+
+A=1;% xk=A*x_{k-1}+q
+H=1;% Yk=H*xk+r
+
+
+part1
+x0 = mvnrnd(x_0,P_0)';%generate only x0, later ones use the equation to build
+n=size(x_0,1);
+X=zeros(n,N);
+Y=zeros(n,N);
+X(:,1)=x0;
+for i=1:N-1
+    X(:,i+1)=A*X(:,i)+mvnrnd(zeros(n,1),Q,1)';
+    Y(:,i) = H*X(:,i)+mvnrnd(zeros(n,1),R,1)';
+end
+Y(:,N) = H*X(:,N)+mvnrnd(zeros(n,1),R,1)';
+
+figure(1)
+hold on;
+len=1:1:N;
+
+plot(len,X,'-*', 'LineWidth',1);
+plot(len,Y,'-*', 'LineWidth',1);
+legend('X','Y');
+
+
+
+part2
+clear;
+N = 35; % length
+x_0 = 2; % prior mean
+P_0 = 8; % prior covariance
+
+P = zeros(1,N);
+
+Q = 1.5; % motion noise covariance
+R = 3; % measurement noise covariance
+
+A = 1; % xk = A*x_{k-1} + q
+H = 1; % Yk = H*xk + r
+
+% Generate the true state sequence
+X = genLinearStateSequence(x_0, P_0, A, Q, N);
+
+% Generate the measurement sequence
+Y = genLinearMeasurementSequence(X, H, R);
+
+% Filter the measurement sequence using the Kalman filter
+[x_hat, P_hat] = kalmanFilter(Y, x_0, P_0, A, Q, H, R);
+
+% Plot the sequence of estimates together with the +/-3sigma level, true states, and measurements
+figure(2); clf; hold on;
+plot(1:N, X(2:end), '-*b');
+plot(1:N, x_hat, '-*r');
+plot(1:N, x_hat + 3*sqrt(squeeze(P_hat))', '--b');
+plot(1:N, x_hat - 3*sqrt(squeeze(P_hat))', '--b');
+plot(1:N, Y, '-*k');
+title('Kalman filter result');
+xlabel('k');
+ylabel('x');
+legend('true state', 'estimated state', '+3-sigma level', '-3-sigma level', 'measurements');
+
+% Plot the error density around zero-mean for time instances k = [1; 2; 4; 30]
+k = [1; 2; 4; 30];
+figure(3); clf; hold on;
+for i = 1:length(k)
+%     error = X(k(i)+1) - x_hat(k(i));
+    error_sigma = sqrt(squeeze(P_hat(k(i))));
+    error_range = [-5*error_sigma:0.1:5*error_sigma];
+    error_pdf = normpdf(error_range, 0, error_sigma);
+    plot(error_range, error_pdf, 'LineWidth', 1);
+end
+title('Error density around zero-mean');
+xlabel('error');
+ylabel('pdf');
+legend('k=1', 'k=2', 'k=4', 'k=30');
+
+
+part3
+clear;
+N = 35; % length
+P_0 = 8; % prior covariance
+
+P = zeros(1,N);
+
+Q = 1.5; % motion noise covariance
+R = 3; % measurement noise covariance
+
+A = 1; % xk = A*x_{k-1} + q
+H = 1; % Yk = H*xk + r
+
+% Generate the true state sequence
+X = genLinearStateSequence(2, P_0, A, Q, N);
+
+% Generate the measurement sequence
+Y = genLinearMeasurementSequence(X, H, R);
+
+% Filter the measurement sequence using the Kalman filter
+[x_hat_incorrect, P_hat_incorrect] = kalmanFilter(Y, 12, P_0, A, Q, H, R);
+
+% Run the Kalman filter again with the correct prior mean
+
+[x_hat_correct, P_hat_correct] = kalmanFilter(Y, 2, P_0, A, Q, H, R);
+
+% Plot the sequence of estimates together with the +/-3sigma level, true states, and measurements
+figure(4); clf; hold on;
+plot(1:N, X(2:end), '-*b');
+plot(1:N, x_hat_incorrect, '-*g');
+plot(1:N, x_hat_correct, '-*k');
+plot(1:N, x_hat_correct + 3*sqrt(squeeze(P_hat_correct))', '--b');
+plot(1:N, x_hat_correct - 3*sqrt(squeeze(P_hat_correct))', '--b');
+% plot(1:N, Y, '-*k');
+title('Kalman filter result with incorrect prior mean');
+xlabel('k');
+ylabel('x');
+legend('true sate','estimated state (incorrect prior mean)', 'estimated state (correct prior mean)', '+3-sigma level', '-3-sigma level');
+
+
+
+part 4
+clear;
+N = 35; % length
+x_0 = 2; % prior mean
+P_0 = 8; % prior covariance
+
+P = zeros(1,N);
+
+Q = 1.5; % motion noise covariance
+R = 3; % measurement noise covariance
+
+A = 1; % xk = A*x_{k-1} + q
+H = 1; % Yk = H*xk + r
+
+% Generate the true state sequence
+X = genLinearStateSequence(x_0, P_0, A, Q, N);
+
+% Generate the measurement sequence
+Y = genLinearMeasurementSequence(X, H, R);
+
+% Filter the measurement sequence using the Kalman filter
+[x_hat, P_hat] = kalmanFilter(Y, x_0, P_0, A, Q, H, R);
+
+k = 20; 
+x_range = [x_hat(:,k)-10:0.1:x_hat(:,k)+10];
+figure(5); clf; hold on;
+
+% xk_given_y1_k (posterior)
+plot(x_range, normpdf(x_range, x_hat(k), sqrt(squeeze(P_hat(k)))), '-r', 'LineWidth', 2);
+% xk_1_given_y1_k_1 (prior)
+plot(x_range, normpdf(x_range, x_hat(k-1), sqrt(squeeze(P_hat(k-1)))), '-k', 'LineWidth', 2);
+% xk_given_y1_k_1(prediction)
+[xpre,Ppre]=linearPrediction(x_hat(:,k-1),P_hat(:,:,k-1),A,Q);  
+plot(x_range, normpdf(x_range, xpre, sqrt(Ppre)),'-b', 'LineWidth', 2);
+% yk
+x_coords = [Y(k), Y(k)];
+y_coords = [-0.02, 0.4];
+plot(x_coords,y_coords,'--m', 'LineWidth', 2)
+
+title('Probability Distributions k=20');
+xlabel('x');
+ylabel('pdf');
+legend('p(x_{k}\mid y_{1:k})', 'p(x_{k-1}\mid y_{1:k-1})', 'p(x_{k}\mid y_{1:k-1})','y_k');
+
+
+function Y = genLinearMeasurementSequence(X, H, R)
+%GENLINEARMEASUREMENTSEQUENCE generates a sequence of observations of the state 
+% sequence X using a linear measurement model. Measurement noise is assumed to be 
+% zero mean and Gaussian.
+%
+%Input:
+%   X           [n x N+1] State vector sequence. The k:th state vector is X(:,k+1)
+%   H           [m x n] Measurement matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   Y           [m x N] Measurement sequence
+%
+
+% your code here
+N=size(X,2)-1;
+m=size(R,1);
+for i=2:N+1
+    Y(:,i-1)=H*X(:,i)+mvnrnd(zeros(m,1),R,1)';
+end
+
+end
+%exprience
+%The index of Y should be 1 less then X since there is a x0 in X that do
+%not generate an observation Y
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function X = genLinearStateSequence(x_0, P_0, A, Q, N)
+%GENLINEARSTATESEQUENCE generates an N-long sequence of states using a 
+%    Gaussian prior and a linear Gaussian process model
+%
+%Input:
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   N           [1 x 1] Number of states to generate
+%
+%Output:
+%   X           [n x N+1] State vector sequence
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Your code here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+x0 = mvnrnd(x_0,P_0)';%generate only x0, later ones use the equation to build
+n=size(x_0,1);
+X=zeros(n,N+1);
+X(:,1)=x0;
+for i=1:N
+    X(:,i+1)=A*X(:,i)+mvnrnd(zeros(n,1),Q,1)';
+end
+end
+
+%Error experience:
+%The mvnrnd function generate a row vector, the X series is boring that it
+%asks to save the value x in column vector.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [x, P] = linearPrediction(x, P, A, Q)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a liear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%
+%Output:
+%   x           [n x 1] predicted state mean
+%   P           [n x n] predicted state covariance
+%
+
+% Your code here
+n=size(x,1);
+% pre=mvnrnd(x,P,1)';
+% x=A*pre+mvnrnd(zeros(n,1),Q,1)';
+x=A*x;
+P=A*P*A'+Q;
+end
+
+% exprience
+% x should just use A*x
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [x, P] = linearUpdate(x, P, y, H, R)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a linear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   y           [m x 1] Measurement
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x 1] updated state mean
+%   P           [n x n] updated state covariance
+%
+
+% Your code here
+innovation = y - H*x;
+S = H*P*H' + R;
+K = P*H'/S;
+x = x + K*innovation;
+P = P - K*S*K';
+end
+
+%video 4.1.3
+
+%%%%%%%%%%%%%%%%%%%%%%%
+function [X, P] = kalmanFilter(Y, x_0, P_0, A, Q, H, R)
+%KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x N] Estimated state vector sequence
+%   P           [n x n x N] Filter error convariance
+%
+
+%% Parameters
+N = size(Y,2);
+
+n = length(x_0);
+m = size(Y,1);
+
+%% Data allocation
+x = zeros(n,N);
+P = zeros(n,n,N);
+
+% Initialize state estimate and covariance
+tempX(:,1) = x_0;
+tempP(:,:,1) = P_0;
+
+for i=1:N
+
+xt = tempX(:,i);
+
+% xk = A*xt + mvnrnd(zeros(n,1),Q,1)';
+
+%Error experience:
+%Forget to update P at linear update step
+
+xk = A*xt;
+tempPt = A*tempP(:,:,i)*A'+Q;
+
+
+S = H*tempPt*H' + R;
+innovation = Y(:,i) - H*xk;
+K = tempPt*H'/S;
+tempX(:,i+1) = xk + K*innovation;
+tempP(:,:,i+1) = tempPt - K*S*K';
+end
+X=tempX(:,2:N+1);
+P=tempP(:,:,2:N+1);
+
+end
+
+%%%%%%%%%%%%%%%%%
+%%part e
+
+% Generate a long true state sequence
+N = 10000; % length
+x_0 = 2; % prior mean
+P_0 = 8; % prior covariance
+Q = 1.5; % motion noise covariance
+R = 3; % measurement noise covariance
+A = 1; % xk = A*x_{k-1} + q
+H = 1; % Yk = H*xk + r
+X = genLinearStateSequence(x_0, P_0, A, Q, N);
+
+% Generate a corresponding measurement sequence
+Y = genLinearMeasurementSequence(X, H, R);
+
+% Filter the measurement sequence using the Kalman filter
+[x_hat, P_hat] = kalmanFilter(Y, x_0, P_0, A, Q, H, R);
+
+% Calculate the estimation error
+e = X(2:end) - x_hat;
+
+% Calculate the estimated mean of the estimation error sequence
+e_mean = mean(e);
+
+
+x_range = [-5*sqrt(squeeze(P_hat(:,:,end))):0.1:5*sqrt(squeeze(P_hat(:,:,end)))];
+
+
+% Plot a histogram of the estimation error
+figure(1); clf; hold on;
+
+% Normalize the histogram with the length of the sequence
+histogram('BinEdges',x_range,'BinCounts',histcounts(e,x_range)/N,'Normalization','pdf');
+% Error experience
+% Here the Normalization parameter should be PDF
+
+% Plot the pdf N(x;0, P_NIN)
+pdf_N = normpdf(x_range, 0, sqrt(squeeze(P_hat(:,:,end))));
+plot(x_range, pdf_N, 'LineWidth', 2);
+legend('error','pdf')
+title('Compare error and pdf')
+
+%%%%%%%%%%%%%%%%%%%
+% Generate the true state sequence
+X = genLinearStateSequence(x_0, P_0, A, Q, N);
+
+% Generate the measurement sequence
+Y = genLinearMeasurementSequence(X, H, R);
+
+% Filter the measurement sequence using the Kalman filter
+[X, P, v, S] = vkalmanFilter(Y, x_0, P_0, A, Q, H, R);
+
+% Estimate the mean of the innovation process
+mean_v = mean(v);
+disp('mean of v is:')
+disp(mean_v)
+
+x_range = linspace(min(v), max(v), 100);
+% Plot the histogram of the innovation process
+figure(2); clf; hold on;
+histogram(v, 'Normalization', 'pdf','BinEdges',x_range);
+pdf_v = normpdf(x_range, 0, sqrt(S));
+plot(x_range, pdf_v, 'LineWidth', 2);
+title('Histogram of Innovation Process and N(vk;0,S_k)');
+legend('Histogram','N(vk;0,S_k}');
+
+% Estimate the autocorrelation function of the innovation process
+figure(4);clf;hold on;
+acf_v = autocorr(v, N-1);
+
+% Plot the autocorrelation function of the innovation process
+figure(3); clf;hold on;
+stem(0:N-1, acf_v);
+title('Autocorrelation Function of Innovation Process');
+xlabel('Lag');
+ylabel('Autocorrelation');
+% Add +/-0.05 lines
+plot([0, N-1], [0.05, 0.05], 'r--', 'LineWidth', 1);
+plot([0, N-1], [-0.05, -0.05], 'r--', 'LineWidth', 1);
+
+
+
+function Y = genLinearMeasurementSequence(X, H, R)
+%GENLINEARMEASUREMENTSEQUENCE generates a sequence of observations of the state 
+% sequence X using a linear measurement model. Measurement noise is assumed to be 
+% zero mean and Gaussian.
+%
+%Input:
+%   X           [n x N+1] State vector sequence. The k:th state vector is X(:,k+1)
+%   H           [m x n] Measurement matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   Y           [m x N] Measurement sequence
+%
+
+% your code here
+N=size(X,2)-1;
+m=size(R,1);
+for i=2:N+1
+    Y(:,i-1)=H*X(:,i)+mvnrnd(zeros(m,1),R,1)';
+end
+
+end
+%exprience
+%The index of Y should be 1 less then X since there is a x0 in X that do
+%not generate an observation Y
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function X = genLinearStateSequence(x_0, P_0, A, Q, N)
+%GENLINEARSTATESEQUENCE generates an N-long sequence of states using a 
+%    Gaussian prior and a linear Gaussian process model
+%
+%Input:
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   N           [1 x 1] Number of states to generate
+%
+%Output:
+%   X           [n x N+1] State vector sequence
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Your code here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+x0 = mvnrnd(x_0,P_0)';%generate only x0, later ones use the equation to build
+n=size(x_0,1);
+X=zeros(n,N+1);
+X(:,1)=x0;
+for i=1:N
+    X(:,i+1)=A*X(:,i)+mvnrnd(zeros(n,1),Q,1)';
+end
+end
+
+%Error experience:
+%The mvnrnd function generate a row vector, the X series is boring that it
+%asks to save the value x in column vector.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [x, P] = linearPrediction(x, P, A, Q)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a liear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%
+%Output:
+%   x           [n x 1] predicted state mean
+%   P           [n x n] predicted state covariance
+%
+
+% Your code here
+n=size(x,1);
+% pre=mvnrnd(x,P,1)';
+% x=A*pre+mvnrnd(zeros(n,1),Q,1)';
+x=A*x;
+P=A*P*A'+Q;
+end
+
+% exprience
+% x should just use A*x
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [x, P] = linearUpdateold(x, P, y, H, R)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a linear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   y           [m x 1] Measurement
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x 1] updated state mean
+%   P           [n x n] updated state covariance
+%
+
+% Your code here
+innovation = y - H*x;
+S = H*P*H' + R;
+K = P*H'/S;
+x = x + K*innovation;
+P = P - K*S*K';
+end
+
+%video 4.1.3
+
+function [x, P, v] = linearUpdate(x, P, y, H, R)
+
+% Innovation
+v = y - H*x;
+
+% Innovation covariance
+S = H*P*H' + R;
+
+% Kalman gain
+K = P*H'*inv(S);
+
+% Updated state estimate
+x = x + K*v;
+
+% Updated error covariance
+P = P - K*H*P;
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+function [X, P] = kalmanFilter(Y, x_0, P_0, A, Q, H, R)
+%KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x N] Estimated state vector sequence
+%   P           [n x n x N] Filter error convariance
+%
+
+%% Parameters
+N = size(Y,2);
+
+n = length(x_0);
+m = size(Y,1);
+
+%% Data allocation
+x = zeros(n,N);
+P = zeros(n,n,N);
+
+% Initialize state estimate and covariance
+tempX(:,1) = x_0;
+tempP(:,:,1) = P_0;
+
+for i=1:N
+
+xt = tempX(:,i);
+
+% xk = A*xt + mvnrnd(zeros(n,1),Q,1)';
+
+%Error experience:
+%Forget to update P at linear update step
+
+xk = A*xt;
+tempPt = A*tempP(:,:,i)*A'+Q;
+
+
+S = H*tempPt*H' + R;
+innovation = Y(:,i) - H*xk;
+K = tempPt*H'/S;
+tempX(:,i+1) = xk + K*innovation;
+tempP(:,:,i+1) = tempPt - K*S*K';
+end
+X=tempX(:,2:N+1);
+P=tempP(:,:,2:N+1);
+
+end
+
+%%%%%%%
+function [X, P, v,S] = vkalmanFilter(Y, x_0, P_0, A, Q, H, R)
+%KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x N] Estimated state vector sequence
+%   P           [n x n x N] Filter error convariance
+%
+
+%% Parameters
+N = size(Y,2);
+
+n = length(x_0);
+m = size(Y,1);
+
+%% Data allocation
+x = zeros(n,N);
+P = zeros(n,n,N);
+
+% Initialize state estimate and covariance
+tempX(:,1) = x_0;
+tempP(:,:,1) = P_0;
+
+for i=1:N
+
+xt = tempX(:,i);
+
+% xk = A*xt + mvnrnd(zeros(n,1),Q,1)';
+
+%Error experience:
+%Forget to update P at linear update step
+
+xk = A*xt;
+tempPt = A*tempP(:,:,i)*A'+Q;
+
+
+S = H*tempPt*H' + R;
+innovation = Y(:,i) - H*xk;
+v(:,i) = innovation;
+K = tempPt*H'/S;
+tempX(:,i+1) = xk + K*innovation;
+tempP(:,:,i+1) = tempPt - K*S*K';
+end
+X=tempX(:,2:N+1);
+P=tempP(:,:,2:N+1);
+
+end
+
+
+
+
+%%%%%%%%%%%%%%%%%
+%%scenario2
+clear;
+clc;
+load('SensorMeasurements.mat')
+
+
+N=2000;
+len = 1:1:N;
+
+
+% we need to find out the mean of Calibreaation from v10 and v20,then get
+% the exact C from both
+data=[CalibrationSequenceVelocity_v0;CalibrationSequenceVelocity_v10;CalibrationSequenceVelocity_v20];
+meanv0 = mean(data(1,:));%c*mean(rk)
+meanv10 = mean(data(2,:));%c*10+c*mean(rk)
+meanv20 = mean(data(3,:));%c*20+c*mean(rk)
+C(1)=(meanv10-meanv0)/10
+C(2)=(meanv20-meanv10)/10
+C(3)=(meanv20-meanv0)/20
+C=mean(C)
+
+for i =1:3
+    meanv(i) = mean(data(i,:));
+    cov(i) = var(data(i,:))/C^2;%vary=c^2*P_r
+end
+
+cov_rvk = mean(cov)
+
+figure(1); clf; hold on;
+
+plot(len,CalibrationSequenceVelocity_v0)
+plot(len,CalibrationSequenceVelocity_v10)
+plot(len,CalibrationSequenceVelocity_v20)
+
+
+b
+Y_g=Generate_y_seq();
+% Generate state sequence
+
+N=2000;
+Ts=0.1;
+
+A=[1 Ts;0 1];%A for state update
+H=[1 0; 0 C]; %H for y=Hx
+Qcon=1;
+R=diag([Qcon C^2*cov_rvk]);%noise covariance for measurement
+% R=diag([16 16]);
+%C = 1.1059 cov_rvk = 2.4702
+gamacv=[0;1];
+
+Qc=10000;%covariance of continuous time motion update
+
+Q=gamacv*Qc*gamacv';%discrete time covariance, motion
+x_0=[0 0]'; % just for prior, set it myself
+P_0=diag([10 10]);%just for prior , set it myself
+
+% [x_hat_add,P_hat_add]=kalmanFilterfusedadd(Y_g, x_0, P_0, A, Q, H, R, N);
+[x_hat_cv, P_hat_cv,vcv]=kalmanFilterfusedskip(Y_g, x_0, P_0, A, Q, H, R, N);
+positioncv=x_hat_cv(1,:);
+velocitycv=x_hat_cv(2,:);
+
+
+
+c
+Aca = [1 Ts Ts^2/2;0 1 Ts;0 0 1];
+Hca = [1 0 0; 0 C 0;];
+gamaca=[0;0;1];
+Qca=gamaca*Qc*gamaca';%discrete time covariance, motion
+x_0ca=[0 0 0]'; % just for prior, set it myself
+P_0ca=diag([10 10 10]);%just for prior , set it myself
+[x_hat_ca, P_hat_ca,vca]=kalmanFilterfusedskip(Y_g, x_0ca, P_0ca, Aca, Qca, Hca, R, N);
+
+
+positionca=x_hat_ca(1,:);
+velocityca=x_hat_ca(2,:);
+
+positionreal=Y_g(1,:);
+velocityreal=Y_g(2,:);
+
+figure(2);clf;hold on;
+plot(len,positioncv,'--','LineWidth',2);
+plot(len,positionca,'LineStyle','-','LineWidth',2);
+plot(len,positionreal,'LineStyle','-.','LineWidth',2);
+legend('positioncv','positionca','positionreal');
+title('positions')
+
+figure(3);clf;hold on;
+plot(len,velocitycv,'--','LineWidth',2);
+plot(len,velocityca,'LineStyle','-','LineWidth',2);
+plot(len,velocityreal/C,'LineStyle','-.','LineWidth',2);
+legend('velocitycv','velocityca','velocityreal');
+title('velocities')
+
+function Y = genLinearMeasurementSequence(X, H, R)
+%GENLINEARMEASUREMENTSEQUENCE generates a sequence of observations of the state 
+% sequence X using a linear measurement model. Measurement noise is assumed to be 
+% zero mean and Gaussian.
+%
+%Input:
+%   X           [n x N+1] State vector sequence. The k:th state vector is X(:,k+1)
+%   H           [m x n] Measurement matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   Y           [m x N] Measurement sequence
+%
+
+% your code here
+N=size(X,2)-1;
+m=size(R,1);
+for i=2:N+1
+    Y(:,i-1)=H*X(:,i)+mvnrnd(zeros(m,1),R,1)';
+end
+
+end
+%exprience
+%The index of Y should be 1 less then X since there is a x0 in X that do
+%not generate an observation Y
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function X = genLinearStateSequence(x_0, P_0, A, Q, N)
+%GENLINEARSTATESEQUENCE generates an N-long sequence of states using a 
+%    Gaussian prior and a linear Gaussian process model
+%
+%Input:
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   N           [1 x 1] Number of states to generate
+%
+%Output:
+%   X           [n x N+1] State vector sequence
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Your code here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+x0 = mvnrnd(x_0,P_0)';%generate only x0, later ones use the equation to build
+n=size(x_0,1);
+X=zeros(n,N+1);
+X(:,1)=x0;
+for i=1:N
+    X(:,i+1)=A*X(:,i)+mvnrnd(zeros(n,1),Q,1)';
+end
+end
+
+%Error experience:
+%The mvnrnd function generate a row vector, the X series is boring that it
+%asks to save the value x in column vector.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [x, P] = linearPrediction(x, P, A, Q)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a liear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%
+%Output:
+%   x           [n x 1] predicted state mean
+%   P           [n x n] predicted state covariance
+%
+
+% Your code here
+n=size(x,1);
+% pre=mvnrnd(x,P,1)';
+% x=A*pre+mvnrnd(zeros(n,1),Q,1)';
+x=A*x;
+P=A*P*A'+Q;
+end
+
+% exprience
+% x should just use A*x
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [x, P, innovation] = linearUpdate(x, P, y, H, R)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a linear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   y           [m x 1] Measurement
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x 1] updated state mean
+%   P           [n x n] updated state covariance
+%
+
+% Your code here
+m=size(y);
+n=size(x);
+% if n>m
+%     H=H(1:m,1:m);
+%     x=x(1:m);
+% end
+innovation = y - H*x;
+S = H*P*H' + R;
+K = P*H'/S;
+x = x + K*innovation;
+P = P - K*S*K';
+end
+
+%video 4.1.3
+
+%%%%%%%%%%%%%%%%%%%%%%%
+function [X, P] = kalmanFilter(Y, x_0, P_0, A, Q, H, R)
+%KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   X           [n x N] Estimated state vector sequence
+%   P           [n x n x N] Filter error convariance
+%
+
+%% Parameters
+N = size(Y,2);
+
+n = length(x_0);
+m = size(Y,1);
+
+% Initialize state estimate and covariance
+X(:,1) = x_0;
+P(:,:,1) = P_0;
+
+for i=1:N
+    % Prediction step
+    [prex, preP] = linearPrediction(X(:,i), P(:,:,i), A, Q);
+
+    % Update step
+    [X(:,i+1), P(:,:,i+1)] = linearUpdate(prex, preP, Y(:,i), H, R);
+end
+X=X(:,2:N+1);
+P=P(:,:,2:N+1);
+end
+
+% function [X, P] = kalmanFilterfusedadd(Y, x_0, P_0, A, Q, H, R, N)
+% %KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+% %
+% %Input:
+% %   Y           [m x N] Measurement sequence
+% %   x_0         [n x 1] Prior mean
+% %   P_0         [n x n] Prior covariance
+% %   A           [n x n] State transition matrix
+% %   Q           [n x n] Process noise covariance
+% %   H           [m x n] Measurement model matrix
+% %   R           [m x m] Measurement noise covariance
+% %
+% %Output:
+% %   x           [n x N] Estimated state vector sequence
+% %   P           [n x n x N] Filter error convariance
+% %
+% %% Parameters
+% N = size(Y,2);
+% 
+% n = length(x_0);
+% m = size(Y,1);
+% 
+% % Initialize state estimate and covariance
+% X(:,1) = x_0;
+% P(:,:,1) = P_0;
+% 
+% for i=1:N
+%     % Prediction step
+%     [prex, preP] = linearPrediction(X(:,i), P(:,:,i), A, Q);
+% 
+%     if isnan(Y(1,i)) %Do not have position
+%         Y(1,i)=X(1,i)+mvnrnd(0,1,1);
+%     end
+% 
+%     % Update step
+%     [X(:,i+1), P(:,:,i+1)] = linearUpdate(prex, preP, Y(:,i), H, R);
+% end
+% X=X(:,2:N+1);
+% P=P(:,:,2:N+1);
+% end
+
+function [X, P,v] = kalmanFilterfusedskip(Y, x_0, P_0, A, Q, H, R, N)
+%KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x N] Estimated state vector sequence
+%   P           [n x n x N] Filter error convariance
+%
+%% Parameters
+N = size(Y,2);
+
+n = length(x_0);
+m = size(Y,1);
+
+% Initialize state estimate and covariance
+X(:,1) = x_0;
+P(:,:,1) = P_0;
+
+for i=1:N
+    % Prediction step
+    [prex, preP] = linearPrediction(X(:,i), P(:,:,i), A, Q);
+
+    if ~isnan(Y(1,i)) % Check if position measurement is available
+        % Update step
+        [X(:,i+1), P(:,:,i+1),v(:,i)] = linearUpdate(prex, preP, Y(:,i), H, R);
+    else
+        % Skip update step if position measurement is missing
+        v(:,i)=0;
+        X(:,i+1) = prex;
+        P(:,:,i+1) = preP;
+    end
+end
+
+% Remove the first element of X and P (the initial state estimate and covariance)
+X = X(:,2:end);
+P = P(:,:,2:end);
+v=v(:,1:2:end);
+
+end
+
+
+
+
+
+
+
+

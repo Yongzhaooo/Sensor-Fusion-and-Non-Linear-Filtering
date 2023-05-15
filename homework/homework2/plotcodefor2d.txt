@@ -1,0 +1,14 @@
+figure; clf; hold on;
+subplot(1,2,1)
+autocorr(vcv(1,:))
+title('CV model correlation of postion')
+subplot(1,2,2)
+autocorr(vca(1,:))
+title('CA model correlation of postion')
+figure; clf; hold on;
+subplot(1,2,1)
+autocorr(vcv(2,:))
+title('CV model correlation of velocity')
+subplot(1,2,2)
+autocorr(vca(2,:))
+title('CA model correlation of velocity')

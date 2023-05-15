@@ -1,0 +1,325 @@
+
+function [fx, Fx] = coordinatedTurnMotion(x, T)
+    %COORDINATEDTURNMOTION calculates the predicted state using a coordinated
+    %turn motion model, and also calculates the motion model Jacobian
+
+    % Input:
+    %   x           [5 x 1] state vector
+    %   T           [1 x 1] Sampling time
+
+    % Output:
+    %   fx          [5 x 1] motion model evaluated at state x
+    %   Fx          [5 x 5] motion model Jacobian evaluated at state x
+
+    % Extract state variables from x
+    px = x(1);
+    py = x(2);
+    v = x(3);
+    phi = x(4);
+    omega = x(5);
+
+    % Motion model equations
+    fx = [px + v*cos(phi)*T;
+          py + v*sin(phi)*T;
+          v;
+          phi + omega*T;
+          omega];
+
+    % Check if the Jacobian is requested by the calling function
+    if nargout > 1
+        % Motion model Jacobian
+        Fx = [1, 0, cos(phi)*T, -v*sin(phi)*T, 0;
+              0, 1, sin(phi)*T, v*cos(phi)*T, 0;
+              0, 0, 1, 0, 0;
+              0, 0, 0, 1, T;
+              0, 0, 0, 0, 1];
+    end
+end
+
+
+function [hx, Hx] = dualBearingMeasurement(x, s1, s2)
+%DUOBEARINGMEASUREMENT calculates the bearings from two sensors, located in 
+%s1 and s2, to the position given by the state vector x. Also returns the
+%Jacobian of the model at x.
+%
+%Input:
+%   x           [n x 1] State vector, the two first element are 2D position
+%   s1          [2 x 1] Sensor position (2D) for sensor 1
+%   s2          [2 x 1] Sensor position (2D) for sensor 2
+%
+%Output:
+%   hx          [2 x 1] measurement vector
+%   Hx          [2 x n] measurement model Jacobian
+%
+% NOTE: the measurement model assumes that in the state vector x, the first
+% two states are X-position and Y-position.
+    % Extract position from the state vector
+    position = x(1:2);
+    
+    % Calculate the bearing measurements
+    phi1 = atan2(position(2) - s1(2), position(1) - s1(1));
+    phi2 = atan2(position(2) - s2(2), position(1) - s2(1));
+    
+    % Construct the measurement vector
+    hx = [phi1; phi2];
+    
+    % Calculate the Jacobian matrix
+    Hx = zeros(2, numel(x));%Here is core.If do not set others to zero there will be mistake
+    
+    % Derivative of atan2 with respect to x and y
+    d_phi1_dx = -(position(2) - s1(2)) / ((position(1) - s1(1))^2 + (position(2) - s1(2))^2);
+    d_phi1_dy = (position(1) - s1(1)) / ((position(1) - s1(1))^2 + (position(2) - s1(2))^2);
+    
+    d_phi2_dx = -(position(2) - s2(2)) / ((position(1) - s2(1))^2 + (position(2) - s2(2))^2);
+    d_phi2_dy = (position(1) - s2(1)) / ((position(1) - s2(1))^2 + (position(2) - s2(2))^2);
+    
+    % Populate the Jacobian matrix
+    Hx(1, 1:2) = [d_phi1_dx, d_phi1_dy];
+    Hx(2, 1:2) = [d_phi2_dx, d_phi2_dy];
+    
+    % Return the measurement vector and Jacobian matrix
+end
+
+%Hx is not 2x2 matrix, but 2xn matrix. For x only use first two elements as
+%position it is natural to take Hx as 2x2, but actually it is still 2xn.
+%So in this case the dimension of Hx should be clarified when
+%initialize it.
+
+function X = genNonLinearStateSequence(x_0, P_0, f, Q, N)
+    % Extract the size of the state vector
+    n = numel(x_0);
+    
+    % Initialize the state vector sequence
+    X = zeros(n, N+1);
+    
+    % Set the initial state
+    X(:, 1) = x_0;
+    
+    % Generate the state vector sequence
+    for k = 1:N
+        % Draw a random sample from the process noise distribution
+        w_k = mvnrnd(zeros(n, 1), Q)';
+        
+        % Propagate the state using the motion model
+        [fx, Fx] = f(X(:, k));
+        X(:, k+1) = fx + w_k;
+    end
+end
+
+function Y = genNonLinearMeasurementSequence(X, h, R)
+% X [n x N+1] State vector sequence
+    % Extract the number of states and measurements
+    [n, N] = size(X);
+    m = size(R, 1);
+    
+    % Initialize the measurement sequence
+    Y = zeros(m, N-1);%X size is N+1
+    
+    % Generate the measurement sequence
+    for k = 1:N-1
+        % Propagate the state through the measurement model
+        [hx, Hx] = h(X(:, k+1));
+        
+        % Draw a random sample from the measurement noise distribution
+        v_k = mvnrnd(zeros(m, 1), R)';
+        
+        % Generate the measurement by adding noise to the predicted measurement
+        Y(:, k) = hx + v_k;
+    end
+end
+
+
+function [SP, W] = sigmaPoints(x, P, type)
+    n = numel(x); % Dimensionality of state vector
+    
+    switch type
+        case 'UKF'
+            % UKF sigma points and weights
+W0 = 1 - n / 3;
+gamma = sqrt(n / (1 - W0));
+P_sqrt = sqrtm(P);
+% Compute sigma points
+SP = [x, x(:, ones(1, n)) + gamma * P_sqrt, x(:, ones(1, n)) - gamma * P_sqrt];
+%x(:,ones(1,n)) do the same with repmat(x,1,n)
+
+% Compute weights
+W = [W0, (1-W0)/(2*n)* ones(1, 2 * n)];
+            
+        case 'CKF'
+            % CKF sigma points and weights
+            alpha = sqrt(n); % CKF parameter
+            
+            % Compute matrix square root of P
+            P_sqrt = sqrtm(P);
+            
+            % Compute sigma points
+            SP = [x(:, ones(1, n)) + alpha * P_sqrt, x(:, ones(1, n)) - alpha * P_sqrt];
+            
+            % Compute weights
+            W = 1 / (2 * n) * ones(1, 2 * n);
+            
+        otherwise
+            error('Incorrect type of sigma point');
+    end
+end
+
+
+
+
+function [x, P] = nonLinKFprediction(x, P, f, Q, type)
+    switch type
+        case 'EKF'
+            % Extended Kalman Filter (EKF)
+            [fx, Fx] = f(x);
+            x = fx;
+            P = Fx * P * Fx' + Q;
+            
+        case 'UKF'
+            % Unscented Kalman Filter (UKF)
+            [SP, W] = sigmaPoints(x, P, 'UKF');
+            n = size(x, 1);
+            
+            % Propagate sigma points through motion model
+            FX = zeros(n, size(SP, 2));
+            for i = 1:size(SP, 2)
+                [fx, ~] = f(SP(:, i));
+                FX(:, i) = fx;
+            end
+            
+            % Approximate mean and covariance
+            x = sum(W .* FX, 2);
+            P = (FX - x(:, ones(1, size(FX, 2)))) * diag(W) * (FX - x(:, ones(1, size(FX, 2))))' + Q;
+            
+            % Make sure the covariance matrix is semi-definite
+            if min(eig(P))<=0
+                [v,e] = eig(P, 'vector');
+                e(e<0) = 1e-4;
+                P = v*diag(e)/v;
+            end
+            
+        case 'CKF'
+            % Cubature Kalman Filter (CKF)
+            [SP, W] = sigmaPoints(x, P, 'CKF');
+            n = size(x, 1);
+            
+            % Propagate sigma points through motion model
+            FX = zeros(n, size(SP, 2));
+            for i = 1:size(SP, 2)
+                [fx, ~] = f(SP(:, i));
+                FX(:, i) = fx;
+            end
+            
+            % Approximate mean and covariance
+            x = sum(W .* FX, 2);
+            P = (FX - x(:, ones(1, size(FX, 2)))) * diag(W) * (FX - x(:, ones(1, size(FX, 2))))' + Q;
+            
+            % Make sure the covariance matrix is semi-definite
+            if min(eig(P))<=0
+                [v,e] = eig(P, 'vector');
+                e(e<0) = 1e-4;
+                P = v*diag(e)/v;
+            end
+        otherwise
+            error('Incorrect type of non-linear Kalman filter');
+    end
+end
+
+
+function [x, P] = nonLinKFupdate(x, P, y, h, R, type)
+    switch type
+        case 'EKF'
+            % Extended Kalman Filter (EKF)
+            [hx, Hx] = h(x);
+            S = Hx * P * Hx' + R;
+            K = P * Hx' / S;
+            innovation = y - hx;
+            x = x + K * innovation;
+            P = P - K * S * K';
+            
+        case 'UKF'
+            % Unscented Kalman Filter (UKF)
+            [SP, W] = sigmaPoints(x, P, 'UKF');
+            n = size(x, 1);
+            m = size(y, 1);
+            
+            % Propagate sigma points through measurement model
+            HY = zeros(m, size(SP, 2));
+            for i = 1:size(SP, 2)
+                [hy, ~] = h(SP(:, i));
+                HY(:, i) = hy;
+            end
+            
+            % Approximate mean and covariance of predicted measurements
+            y_hat = sum(W .* HY, 2);
+            S = (HY - y_hat(:, ones(1, size(HY, 2)))) * diag(W) * (HY - y_hat(:, ones(1, size(HY, 2))))' + R;
+            
+            % Compute cross-covariance matrix
+            Pxy = (SP - x(:, ones(1, size(SP, 2)))) * diag(W) * (HY - y_hat(:, ones(1, size(HY, 2))))';
+            
+            x = x +Pxy*inv(S)*(y-y_hat);
+            P=P-Pxy*inv(S)*Pxy';
+            
+            % Make sure the covariance matrix is semi-definite
+            if min(eig(P))<=0
+                [v,e] = eig(P, 'vector');
+                e(e<0) = 1e-4;
+                P = v*diag(e)/v;
+            end
+            
+        case 'CKF'
+            % Cubature Kalman Filter (CKF)
+            [SP, W] = sigmaPoints(x, P, 'CKF');
+            n = size(x, 1);
+            m = size(y, 1);
+            
+            % Propagate sigma points through measurement model
+            HY = zeros(m, size(SP, 2));
+            for i = 1:size(SP, 2)
+                [hy, ~] = h(SP(:, i));
+                HY(:, i) = hy;
+            end
+            
+            % Approximate mean and covariance of predicted measurements
+            y_hat = sum(W .* HY, 2);
+            S = (HY - y_hat(:, ones(1, size(HY, 2)))) * diag(W) * (HY - y_hat(:, ones(1, size(HY, 2))))' + R;
+            
+            % Compute cross-covariance matrix
+            Pxy = (SP - x(:, ones(1, size(SP, 2)))) * diag(W) * (HY - y_hat(:, ones(1, size(HY, 2))))';
+            
+            x = x +Pxy*inv(S)*(y-y_hat);
+            P=P-Pxy*inv(S)*Pxy';
+            
+            % Make sure the covariance matrix is semi-definite
+            if min(eig(P))<=0
+                [v,e] = eig(P, 'vector');
+                e(e<0) = 1e-4;
+                P = v*diag(e)/v;
+            end
+            
+        otherwise
+            error('Incorrect type of non-linear Kalman filter');
+    end
+end
+
+function [xf, Pf, xp, Pp] = nonLinearKalmanFilter(Y, x_0, P_0, f, Q, h, R, type)
+
+% Initialization
+N = size(Y, 2);
+n = numel(x_0);
+xf = zeros(n, N);
+Pf = zeros(n, n, N);
+xp = zeros(n, N);
+Pp = zeros(n, n, N);
+
+% Initial state prior
+[xp(:, 1), Pp(:, :, 1)] = nonLinKFprediction(x_0, P_0, f, Q, type);
+[xf(:, 1), Pf(:, :, 1)] = nonLinKFupdate(xp(:, 1), Pp(:, :, 1), Y(:, 1), h, R, type);
+
+% Loop
+for k = 2:N
+    [xp(:, k), Pp(:, :, k)] = nonLinKFprediction(xf(:, k-1), Pf(:, :, k-1), f, Q, type);
+    [xf(:, k), Pf(:, :, k)] = nonLinKFupdate(xp(:, k), Pp(:, :, k), Y(:, k), h, R, type);
+end
+
+end
+

@@ -1,0 +1,1269 @@
+%% Sensor Fusion
+% HA4 Analysis
+% Johan Runeby
+% 
+%%
+%How to export your source code as .txt file.
+filename = fullfile('C:\Users\johan\OneDrive\Skrivbord\Sensor fusion\HA4\HA4_Analysis.m'); % You should change "mainExample.m" with the name of your source file!
+copyfile(filename,'HA4_code.txt','f') % Here, 'mainExample.txt' is the output. You should upload the 'main.txt' (or whatever you name it).
+%%
+clc;
+clear; close all;
+set(groot, 'defaultAxesTickLabelInterpreter','latex'); 
+set(groot, 'defaultLegendInterpreter','latex');
+set(gca,'TickLabelInterpreter','latex')
+
+%% --- Q1 ---
+clc; clear
+
+
+%True track
+% Sampling period
+T = 0.1;
+% Length of time sequence
+K = 600;
+% Allocate memory
+omega = zeros(1,K+1);
+% Turn rate
+omega(150:450) = -pi/301/T;
+% Initial state
+x0 = [0 0 20 0 omega(1)]';
+% Allocate memory
+X = zeros(length(x0),K+1);
+X(:,1) = x0;
+% Create true track
+for i=2:K+1
+    % Simulate
+    X(:,i) = coordinatedTurnMotion(X(:,i-1), T);
+    % Set turn−rate
+    X(5,i) = omega(i);
+end
+
+%Prior:
+x0 = [0; 0; 0; 0; 0];
+P0 = diag([10^2, 10^2, 10^2, (5*pi/180)^2, (1*pi/180)^2]);
+
+%Sensors:
+s1 = [300; -100];
+s2 = [300; -300];
+S = [s1.*ones(1,K); s2.*ones(1,K)];
+
+Q = diag([0, 0, 0.01, 0, pi/180]);
+R = [(pi/180)^2 0; 
+     0 (pi/180)^2];
+
+%Coord. turn model:
+f = @(x, T) coordinatedTurnMotion(x, T);
+
+%Dual bearing measurment model:
+h = @(x, T) dualBearingMeasurement(x, s1, s2);
+
+%Generate measurment sequence:
+Y = genNonLinearMeasurementSequence(X, h, R);
+
+sigma_points = @sigmaPoints;
+
+[xs, Ps, xf, Pf, xp, Pp] = nonLinRTSsmoother(Y, x0, P0, f, T, Q, S, h, R, sigma_points, 'CKF');
+
+
+
+
+
+%% --- Q1 --- Plot ---
+clf; clc;
+[xpos, ypos] = getPosFromMeasurement(Y(1,:), Y(2,:), s1, s2);
+
+%3sigma every 5th
+level = 3; npoints = 32;
+CKF_filter_contur = {};
+CKF_smooth_contur = {}; 
+for i=1:5:length(xf)
+    pos_mean = xf(1:2,i);
+    pos_cov = Pf(1:2,1:2,i);
+    [ xy ] = sigmaEllipse2D( pos_mean, pos_cov, level, npoints );
+    CKF_filter_contur(i) = {xy};
+end
+for i=1:5:length(xs)
+    pos_mean = xs(1:2,i);
+    pos_cov = Ps(1:2,1:2,i);
+    [ xy ] = sigmaEllipse2D( pos_mean, pos_cov, level, npoints );
+    CKF_smooth_contur(i) = {xy};
+end
+
+
+set(gcf,'Position',[100 200 900 700])
+figure(1)
+p1 = plot(s1(1),s1(2), '*', 'Color', "#7E2F8E",'MarkerSize',10,"DisplayName",'Sensor 1'); %Sensor 1
+hold on; grid on;
+p2 = plot(s2(1),s2(2), '*', 'Color', "#A2142F",'MarkerSize',10,"DisplayName",'Sensor 2'); %Sensor 2
+p3 = plot(X(1,:),X(2,:),'Color',	"#77AC30","LineWidth",1.4,"DisplayName",'True state'); %True state
+p4 = plot(xpos,ypos,'o','Color',	"#000000",'MarkerSize',2.5,"DisplayName",'Measurements'); %Measurements
+p5 = plot(xf(1,:),xf(2,:),'Color',"#D95319","LineWidth",1.3,"DisplayName",'Filter trajectory'); %Filter estimated state
+p6 = plot(xs(1,:),xs(2,:),'Color',"#0072BD","LineWidth",1.3,"DisplayName",'Smoothing trajectory'); %Smoothed estimated state
+for i =1:5:length(CKF_filter_contur)
+    cont = CKF_filter_contur{i};
+    p7 = plot(cont(1,:),cont(2,:),'Color',"#EDB120",'LineStyle','-.','LineWidth',0.9,'DisplayName','$3\sigma$ CKF'); %plot contour
+end
+for i =1:5:length(CKF_smooth_contur)
+    cont = CKF_smooth_contur{i};
+    p8 = plot(cont(1,:),cont(2,:),'Color',"#4DBEEE",'LineStyle','-.','LineWidth',0.9,'DisplayName','$3\sigma$ CKFS'); %plot contour
+end
+xlabel('$x$','Interpreter','latex')
+ylabel('$y$','Interpreter','latex')
+legend([p1 p2 p3 p4 p5 p6 p7 p8],'Orientation','horizontal','NumColumns',2);
+xlim([-50 550])
+ylim([-600 200])
+print('Q1a.eps','-depsc');
+
+
+%% --- Q1 b) ---
+clc;
+% Generate outlier:
+k = 300;
+Y(:,k) = Y(:,k) + 0.3*rand(2,1);
+
+%Run smoother
+[xs, Ps, xf, Pf, xp, Pp] = nonLinRTSsmoother(Y, x0, P0, f, T, Q, S, h, R, sigma_points, 'CKF');
+
+%% --- Q1 b) --- Plot ---
+clf;
+[outlier_xpos, outlier_ypos] = getPosFromMeasurement(Y(1,k), Y(2,k), s1, s2);
+
+%3sigma
+level = 3; npoints = 32;
+CKF_filter_outlier_contur = {};
+CKF_smooth_outlier_contur = {}; 
+for i=1:1:length(xf)
+    pos_mean = xf(1:2,i);
+    pos_cov = Pf(1:2,1:2,i);
+    [ xy ] = sigmaEllipse2D( pos_mean, pos_cov, level, npoints );
+    CKF_filter_outlier_contur(i) = {xy};
+end
+for i=1:1:length(xs)
+    pos_mean = xs(1:2,i);
+    pos_cov = Ps(1:2,1:2,i);
+    [ xy ] = sigmaEllipse2D( pos_mean, pos_cov, level, npoints );
+    CKF_smooth_outlier_contur(i) = {xy};
+end
+%Pick out the contour k=300
+cont_filter_k300 = CKF_filter_outlier_contur{300};
+cont_smooth_k300 = CKF_smooth_outlier_contur{300};
+
+set(gcf,'Position',[100 200 900 700])
+figure(1); 
+p1 = plot(s1(1),s1(2),'*','Color',"#7E2F8E",'MarkerSize',10,"DisplayName",'Sensor 1'); %Sensor 1
+hold on; grid on;
+p2 = plot(s2(1),s2(2),'*','Color',"#A2142F",'MarkerSize',10,"DisplayName",'Sensor 2'); %Sensor 2
+p3 = plot(X(1,:),X(2,:),'Color',"#77AC30","LineWidth",1.4,"DisplayName",'True state'); %True state
+p4 = plot(xpos,ypos,'o','Color',"#000000",'MarkerSize',2.5,"DisplayName",'Measurements'); %Measurements
+p5 = plot(outlier_xpos, outlier_ypos,"hexagram",'Color',"#FF0000",'MarkerFaceColor','r','MarkerEdgeColor','black','MarkerSize',10,"DisplayName",'Outlier'); %Outlier
+p6 = plot(xf(1,:),xf(2,:),'Color',"#D95319","LineWidth",1.3,"DisplayName",'Filter trajectory'); %Filter estimated state
+p7 = plot(xs(1,:),xs(2,:),'Color',"#0072BD","LineWidth",1.3,"DisplayName",'Smoothing trajectory'); %Smoothed estimated state
+p8 = plot(cont_filter_k300(1,:),cont_filter_k300(2,:),'Color',"#D95319",'LineStyle','-.','LineWidth',1.3,'DisplayName','$3\sigma$ CKF'); 
+p9 = plot(cont_smooth_k300(1,:),cont_smooth_k300(2,:),'Color',"#0072BD",'LineStyle','-.','LineWidth',1.3,'DisplayName','$3\sigma$ CKFS');
+p10 = plot(xf(1,k),xf(2,k),'o','Color',"#D95319",'MarkerFaceColor',"#D95319",'MarkerSize',7,"DisplayName",'Filter state estimate at k=300'); %Filter estimated state k300
+p11 = plot(xs(1,k),xs(2,k),'o','Color',"#0072BD",'MarkerFaceColor',"#0072BD",'MarkerSize',7,"DisplayName",'Smoothed state estimate at k=300'); %Smoothed estimated state k300
+xlabel('$x$','Interpreter','latex')
+ylabel('$y$','Interpreter','latex')
+xlim([-150 600])
+ylim([-600 150])
+legend([p3 p4 p5 p6 p7 p8 p9 p10 p11],'Location','south','Orientation','horizontal','NumColumns',3);
+print('Q1b.eps','-depsc');
+
+%% --- Q2 ---
+clc; clear;
+
+%Initial prior
+x0 = 2;
+P0 = 8;
+
+A = 1;
+H = 1;
+
+%Variances
+Q = 1.5;
+R = 3;
+%Time steps;
+N = 30;
+
+%Generate trajectory
+X = genLinearStateSequence(x0, P0, A, Q, N);
+%Generate measurment sequence
+Y = genLinearMeasurementSequence(X, H, R);
+
+%Run Kalman
+[X_kf, P_kf, v, Xpred, Ppred] = kalmanFilter(Y, x0, P0, A, Q, H, R);
+    
+proc_f = @(X_kmin1) (ff(X_kmin1, A));
+meas_h = @(X_k) (hh(X_k, H));
+
+plotFunc_handle  = @(k, Xk, Xkmin1, Wk, j) (plotPostPdf(k, Xk, Wk, xf, Pf, bResample, sigma, ax));
+
+%Number of particles:
+NumP=50;
+
+%PF no resample:
+[xfp, Pfp, Xp, Wp] = pfFilter(x0, P0, Y, proc_f, Q, meas_h, R, NumP, false, plotFunc_handle);
+
+%PF resample:
+[xfp_re, Pfp_re, Xp_re, Wp_re] = pfFilter(x0, P0, Y, proc_f, Q, meas_h, R, NumP, true, plotFunc_handle);
+
+
+%% --- Q2 a) ---- MSE ----
+clc;
+MSE_KF = mean((X(1:end-1) - X_kf).^2)               % Kalman
+MSE_PF = mean((X(1:end-1) - xfp).^2)                % PF no resampl
+MSE_PF_re = mean((X(1:end-1) - xfp_re).^2)          % PF resampl
+
+%% --- Q2 a) --- Plot ---
+close all; clf; clc;
+
+mean_KF = X_kf;        
+cov_KF = squeeze(P_kf)';
+mean_PF = xfp;          cov_PF = squeeze(Pfp)';
+mean_PF_re = xfp_re;    cov_PF_re = squeeze(Pfp_re)';
+
+
+set(gcf,'Position',[100 200 900 700])
+figure(1)
+p1 = plot(X,'Color',"#77AC30","LineWidth",1.8,"DisplayName",'True state'); %True state
+hold on; grid on;
+p2 = plot(Y,'o','Color',"#000000",'MarkerSize',3.5,"DisplayName",'Measurements','MarkerFaceColor','#000000'); %Measurement
+p3 = errorbar(1:length(X_kf), mean_KF, cov_KF,'Color',"#0072BD",'LineStyle','-',"DisplayName",'Kalman filter');
+p4 = errorbar(1:length(xfp), mean_PF, cov_PF,'Color',"#D95319",'LineStyle','-',"DisplayName",'PF filter (no resampling)');
+p5 = errorbar(1:length(xfp_re), mean_PF_re, cov_PF_re,'Color',"#EDB120",'LineStyle','-',"DisplayName",'PF filter (resampling)');
+xlabel('$k$','Interpreter','latex')
+%ylabel('$TODO$','Interpreter','latex')
+legend([p1 p2 p3 p4 p5]);
+print('Q2a.eps','-depsc');
+
+
+%% --- Q2 a) --- Three time instances ---
+clc; clf;
+sigma1 = 1;
+sigma2 = 1;
+
+% Times step beginning:
+k1 = 2;
+figure(1); set(gcf,'Position',[100 200 900 700])
+plotPostPdf(k1, Xp(:,:,k1), Wp(:,k1)' , X_kf, P_kf, false, sigma1, [])
+hold on
+plotPostPdf(k1, Xp_re(:,:,k1), Wp_re(:,k1)' , X_kf, P_kf, true, sigma2, [])
+xlim([-8 8])
+legend('PF approximation (no resample)' ,'KF','PF approximation (resample)')
+print('Q2a_k1.eps','-depsc');
+
+% Times step mid:
+k2 = 15;
+figure(2); set(gcf,'Position',[100 200 900 700])
+plotPostPdf(k2, Xp(:,:,k2), Wp(:,k2)' , X_kf, P_kf, false, sigma1, [])
+hold on
+plotPostPdf(k2, Xp_re(:,:,k2), Wp_re(:,k2)' , X_kf, P_kf, true, sigma2, [])
+xlim([-4 12])
+legend('PF approximation (no resample)' ,'KF','PF approximation (resample)')
+print('Q2a_k2.eps','-depsc');
+
+% Times step end:
+k3 = 29;
+figure(3); set(gcf,'Position',[100 200 900 700])
+plotPostPdf(k3, Xp(:,:,k3), Wp(:,k3)' , X_kf , P_kf, false, sigma1, [])
+hold on
+plotPostPdf(k3, Xp_re(:,:,k3), Wp_re(:,k3)' , X_kf, P_kf, true, sigma2, [])
+xlim([0 14])
+legend('PF approximation (no resample)' ,'KF','PF approximation (resample)')
+print('Q2a_k3.eps','-depsc');
+
+
+
+%% --- Q2 b) --- Incorrect prio ---
+clc; clf; close all;
+
+%Incorrect prio;
+x0 = -20;
+P0 = 2;
+
+%Run Kalman
+[X_kf, P_kf, v, Xpred, Ppred] = kalmanFilter(Y, x0, P0, A, Q, H, R);
+%Number of particles:
+NumP=10000;
+%PF no resample:
+[xfp, Pfp, Xp, Wp] = pfFilter(x0, P0, Y, proc_f, Q, meas_h, R, NumP, false, plotFunc);
+%PF resample:
+[xfp_re, Pfp_re, Xp_re, Wp_re] = pfFilter(x0, P0, Y, proc_f, Q, meas_h, R, NumP, true, plotFunc);
+
+% --- Plot ---
+mean_KF = X_kf;         cov_KF = squeeze(P_kf)';
+mean_PF = xfp;          cov_PF = squeeze(Pfp)';
+mean_PF_re = xfp_re;    cov_PF_re = squeeze(Pfp_re)';
+set(gcf,'Position',[100 200 900 700])
+figure(1)
+p1 = plot(X,'Color',"#77AC30","LineWidth",1.8,"DisplayName",'True state'); %True state
+hold on; grid on;
+p2 = plot(Y,'o','Color',"#000000",'MarkerSize',3.5,"DisplayName",'Measurements','MarkerFaceColor','#000000'); %Measurement
+p3 = errorbar(1:length(X_kf), mean_KF, cov_KF,'Color',"#0072BD",'LineStyle','-',"DisplayName",'Kalman filter');
+p4 = errorbar(1:length(xfp), mean_PF, cov_PF,'Color',"#D95319",'LineStyle','-',"DisplayName",'PF filter (no resampling)');
+p5 = errorbar(1:length(xfp_re), mean_PF_re, cov_PF_re,'Color',"#EDB120",'LineStyle','-',"DisplayName",'PF filter (resampling)');
+xlabel('$k$','Interpreter','latex')
+%ylabel('$TODO$','Interpreter','latex')
+legend([p1 p2 p3 p4 p5]);
+print('Q2b.eps','-depsc');
+
+
+
+%% --- Q2 c,d) --- Particle trajectories ---
+clc; clf; close all;
+%Number of particles:
+NumP=30;
+N = 30;
+
+%PF no resample:
+[xfp, Pfp, Xp, Wp] = pfFilter(x0, P0, Y, proc_f, Q, meas_h, R, NumP, false, plotFunc);
+%PF resample:
+[xfp_re, Pfp_re, Xp_re, Wp_re] = pfFilter(x0, P0, Y, proc_f, Q, meas_h, R, NumP, true, plotFunc);
+
+
+figure(1)
+for k=2:N
+    plotPartTrajs(k, Xp(:,:,k), Xp(:,:,k-1), [], 1:N)
+end
+grid on; hold on;
+p1 = plot(X,'Color',"#77AC30","LineWidth",1.8,"DisplayName",'True state trajectory'); %True state
+p2 = plot(xfp,'Color',"#EDB120","LineWidth",1.8,"DisplayName",'Estimated state trajectory'); %Estimated state
+legend([p1 p2])
+print('Q2c.eps','-depsc');
+
+
+figure(2)
+for k=2:N
+    plotPartTrajs(k, Xp_re(:,:,k), Xp_re(:,:,k-1), [], 1:N)
+end
+grid on; hold on;
+p1 = plot(X,'Color',"#77AC30","LineWidth",1.8,"DisplayName",'True state'); %True state
+p2 = plot(xfp_re,'Color',"#EDB120","LineWidth",1.8,"DisplayName",'Estimated state trajectory'); %Estimated state
+legend([p1 p2])
+print('Q2d.eps','-depsc');
+
+
+%% FUNCTIONS
+
+function X_k = ff(X_kmin1, A)
+%
+% X_kmin1:  [n x N] N states vectors at time k-1
+% A:        [n x n] Matrix such that x_k = A*x_k-1 + q_k-1
+    X_k = A*X_kmin1;
+end
+
+function H_k = hh(X_k, H)
+%
+% X_k:  [n x N] N states
+% H:    [m x n] Matrix such that y = H*x + r_k
+    H_k = H*X_k;
+end
+
+function [x, y] = getPosFromMeasurement(y1, y2, s1, s2)
+    %GETPOSFROMMEASUREMENT computes the intersection point
+    %(transformed 2D measurement in Cartesian coordinate
+    %system) given two sensor locations and two bearing
+    %measurements, one from each sensor.
+    %INPUT: % y1: bearing measurement from sensor 1
+            % y2: bearing measurement from sensor 2
+            % s1: location of sensor 1 in 2D Cartesian
+            % s2: location of sensor 2 in 2D Cartesian
+    
+    %OUTPUT:% x: coordinate of intersection point on x axis
+            % y: coordinate of intersection point on y axis
+
+    %This problem can be formulated as solving a set of two
+    %linear equations with two unknowns. Specifically, one
+    %would like to obtain (x,y) by solving
+    %(y−s1(2))=(x−s1(1))tan(y1) and (y−s2(2))=(x−s2(1))tan(y2).
+
+    x = (s2(2)-s1(2)+tan(y1)*s1(1)-tan(y2)*s2(1)) ./ (tan(y1)-tan(y2));
+    y = s1(2)+tan(y1).*(x-s1(1));
+
+end
+
+%HA2
+function [ xy ] = sigmaEllipse2D( mu, Sigma, level, npoints )
+    %SIGMAELLIPSE2D generates x,y-points which lie on the ellipse describing
+    % a sigma level in the Gaussian density defined by mean and covariance.
+    %
+    %Input:
+    %   MU          [2 x 1] Mean of the Gaussian density
+    %   SIGMA       [2 x 2] Covariance matrix of the Gaussian density
+    %   LEVEL       Which sigma level curve to plot. Can take any positive value, 
+    %               but common choices are 1, 2 or 3. Default = 3.
+    %   NPOINTS     Number of points on the ellipse to generate. Default = 32.
+    %
+    %Output:
+    %   XY          [2 x npoints] matrix. First row holds x-coordinates, second
+    %               row holds the y-coordinates. First and last columns should 
+    %               be the same point, to create a closed curve.
+    
+    
+    %Setting default values, in case only mu and Sigma are specified.
+    if nargin < 3
+        level = 3;
+    end
+    if nargin < 4
+        npoints = 32;
+    end
+    
+    %Your code here
+    Y = linspace(0,2*pi,npoints);
+    
+    % initilize size
+    XY = zeros(2,npoints);
+    
+    for i =1:length(Y)
+        j = Y(i);
+        XY(:,i) = mu + level*sqrtm(Sigma)*([cos(j),sin(j)]');
+    end
+    
+    % return
+    [xy] = XY;
+
+end
+
+function X = genLinearStateSequence(x_0, P_0, A, Q, N)
+    %GENLINEARSTATESEQUENCE generates an N-long sequence of states using a 
+    %    Gaussian prior and a linear Gaussian process model
+    %
+    %Input:
+    %   x_0         [n x 1] Prior mean
+    %   P_0         [n x n] Prior covariance
+    %   A           [n x n] State transition matrix
+    %   Q           [n x n] Process noise covariance
+    %   N           [1 x 1] Number of states to generate
+    %
+    %Output:
+    %   X           [n x N+1] State vector sequence
+    %
+    % Your code here
+    x0 = mvnrnd(x_0, P_0)'; % init state vec
+    X = zeros(length(x_0), N+1); %init size
+    X(:,1) = x0;
+    for i=2:N+1
+        %q_i-1
+        mu_q = zeros(length(x_0),1);
+        prev_q = mvnrnd(mu_q, Q);
+        X(:,i) = A*X(:,i-1) + prev_q';
+    end
+end
+
+function Y = genLinearMeasurementSequence(X, H, R)
+
+    %GENLINEARMEASUREMENTSEQUENCE generates a sequence of observations of the state 
+    % sequence X using a linear measurement model. Measurement noise is assumed to be 
+    % zero mean and Gaussian.
+    %
+    %Input:
+    %   X           [n x N+1] State vector sequence. The k:th state vector is X(:,k+1)
+    %   H           [m x n] Measurement matrix
+    %   R           [m x m] Measurement noise covariance
+    %
+    %Output:
+    %   Y           [m x N] Measurement sequence
+    %
+    
+    % your code here
+    n = size(X,1);
+    N = size(X,2) - 1;
+    m = size(H,1);
+    
+    
+    Y = zeros(m, N); %init size
+    for i=1:N
+        %r_k
+        mu_r = zeros(m , 1);
+        r_k = mvnrnd(mu_r, R);
+        Y(:,i) = H*X(:,i+1) + r_k';
+    end
+end
+
+function [x, P] = linearPrediction(x, P, A, Q)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a liear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%
+%Output:
+%   x           [n x 1] predicted state mean
+%   P           [n x n] predicted state covariance
+%
+
+% Your code here
+x = A*x;
+P = A*P*A' + Q;
+
+end
+
+function [x, P, v] = linearUpdate(x, P, y, H, R)
+%LINEARPREDICTION calculates mean and covariance of predicted state
+%   density using a linear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   y           [m x 1] Measurement
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   x           [n x 1] updated state mean
+%   P           [n x n] updated state covariance
+%
+
+% Your code here
+
+%Innovation:
+v = y - H*x;
+
+%Innovation cov:
+S = H*P*H' + R;
+
+%Kalman gain:
+K = P*H'*inv(S);
+
+%Updated posterior mean:
+x = x + K*v;
+
+%Updated posterior cov.:
+P = P - K*S*K';
+
+end
+
+function [X, P, v, Xpred, Ppred] = kalmanFilter(Y, x_0, P_0, A, Q, H, R)
+%KALMANFILTER Filters measurements sequence Y using a Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   A           [n x n] State transition matrix
+%   Q           [n x n] Process noise covariance
+%   H           [m x n] Measurement model matrix
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   X           [n x N] Estimated state vector sequence
+%   P           [n x n x N] Filter error convariance
+%
+
+% Parameters, size
+N = size(Y,2);
+n = length(x_0);
+m = size(Y,1);
+
+% Data allocation
+X = zeros(n,N);
+P = zeros(n,n,N);
+v = zeros(n,N);
+
+%Save each prediction density separately
+Xpred = zeros(n,N);
+Ppred = zeros(n,n,N);
+
+
+
+%Do the first step manually
+[x1, P1] = linearPrediction(x_0, P_0, A, Q);
+[x1, P1] = linearUpdate(x1, P1, Y(:,1), H, R);
+X(:,1) = x1;
+P(:,:,1) = P1;
+
+
+%Calculate the prediction and update recursivley
+for i=2:N    
+    [X(:,i), P(:,:,i)] = linearPrediction(X(:,i-1), P(:,:,i-1), A, Q);
+    %Save predicted density:
+    Xpred(:,i) = X(:,i);
+    Ppred(:,i) = P(:,:,i);
+    [X(:,i), P(:,:,i), v(:,i)] = linearUpdate(X(:,i), P(:,:,i), Y(:,i), H, R);
+end
+
+
+end
+
+
+%HA3
+function [fx, Fx] = coordinatedTurnMotion(x, T)
+%COORDINATEDTURNMOTION calculates the predicted state using a coordinated
+%turn motion model, and also calculated the motion model Jacobian
+%
+%Input:
+%   x           [5 x 1] state vector
+%   T           [1 x 1] Sampling time
+%
+%Output:
+%   fx          [5 x 1] motion model evaluated at state x
+%   Fx          [5 x 5] motion model Jacobian evaluated at state x
+%
+% NOTE: the motion model assumes that the state vector x consist of the
+% following states:
+%   px          X-position
+%   py          Y-position
+%   v           velocity
+%   phi         heading
+%   omega       turn-rate
+
+% Your code for the motion model here
+% fx = ...
+px = x(1);
+py = x(2);
+v = x(3);
+theta = x(4);
+omega = x(5);
+
+fx = [px + T*v*cos(theta);
+      py + T*v*sin(theta);
+      v;
+      theta+T*omega;
+      omega];
+
+%Check if the Jacobian is requested by the calling function
+if nargout > 1
+    % Your code for the motion model Jacobian here
+    % Fx = ...
+    Fx =  [1 0 T*cos(theta) -T*v*sin(theta) 0;
+           0 1 T*sin(theta) T*v*cos(theta) 0;
+           0 0 1 0 0;
+           0 0 0 1 T;
+           0 0 0 0 1];
+end
+
+end
+
+
+function Y = genNonLinearMeasurementSequence(X, h, R)
+%GENNONLINEARMEASUREMENTSEQUENCE generates ovservations of the states 
+% sequence X using a non-linear measurement model.
+%
+%Input:
+%   X           [n x N+1] State vector sequence
+%   h           Measurement model function handle
+%   h           Measurement model function handle
+%               [hx,Hx]=h(x) 
+%               Takes as input x (state) 
+%               Returns hx and Hx, measurement model and Jacobian evaluated at x
+%   R           [m x m] Measurement noise covariance
+%
+%Output:
+%   Y           [m x N] Measurement sequence
+%
+
+% Your code here
+
+    n = size(X,1);
+    N = size(X,2) - 1;
+    m = size(R,1);
+    
+    
+    Y = zeros(m, N); %init size
+    for i=1:N
+        mu_r = zeros(m , 1);        
+        r_k = mvnrnd(mu_r, R);
+        Y(:,i) = h(X(:,i+1)) + r_k';
+    end
+    
+    
+
+end
+
+
+function [hx, Hx] = dualBearingMeasurement(x, s1, s2)
+%DUOBEARINGMEASUREMENT calculates the bearings from two sensors, located in 
+%s1 and s2, to the position given by the state vector x. Also returns the
+%Jacobian of the model at x.
+%
+%Input:
+%   x           [n x 1] State vector, the two first element are 2D position
+%   s1          [2 x 1] Sensor position (2D) for sensor 1
+%   s2          [2 x 1] Sensor position (2D) for sensor 2
+%
+%Output:
+%   hx          [2 x 1] measurement vector
+%   Hx          [2 x n] measurement model Jacobian
+%
+% NOTE: the measurement model assumes that in the state vector x, the first
+% two states are X-position and Y-position.
+
+%Init sizes:
+n = size(x,1);
+hx = zeros(2,1);
+Hx = zeros(2,n);
+
+px = x(1); %position x
+py = x(2); %positions y
+
+s1_x = s1(1); %sensor 1 x-pos
+s1_y = s1(2);
+
+s2_x = s2(1); %sensor 2 x-pos
+s2_y = s2(2);
+
+
+hx = [atan2(py-s1_y , px-s1_x);
+      atan2(py-s2_y, px-s2_x)];
+
+J11 = -(py-s1_y) / ((px-s1_x)^2 + (py-s1_y)^2);
+J12 =  (px-s1_x) / ((px-s1_x)^2 + (py-s1_y)^2);
+
+
+J21 = -(py-s2_y) / ((px-s2_x)^2 + (py-s2_y)^2);
+J22 =  (px-s2_x) / ((px-s2_x)^2 + (py-s2_y)^2);
+
+Hx(1,1) = J11;
+Hx(1,2) = J12;
+Hx(2,1) = J21;
+Hx(2,2) = J22;
+% Hx = [J11 J12;
+%       J21 J22];
+
+% Hx = [J11 J12 0 0; %Modified for the analysis 
+%       J21 J22 0 0];
+
+end
+
+
+function [SP,W] = sigmaPoints(x, P, type)
+% SIGMAPOINTS computes sigma points, either using unscented transform or
+% using cubature.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%
+%Output:
+%   SP          [n x 2n+1] UKF, [n x 2n] CKF. Matrix with sigma points
+%   W           [1 x 2n+1] UKF, [1 x 2n] UKF. Vector with sigma point weights 
+%
+    n = size(P,1);    
+    switch type  
+        case 'UKF'
+            SP = zeros(n,2*n+1);
+            W = zeros(1,2*n+1);
+            W_0 = 1 - n/3; % if x is Gaussian
+            
+            SP(:,1) = x; %First sigma point is the mean
+            W(1,1) = W_0; %First weight
+            W(1,2:end) = (1-W_0)/(2*n); %All other weights
+            
+            P_i = sqrtm(P);
+            for i=1:n
+                SP(:,i+1) = x + sqrt(n/(1-W_0))*P_i(:,i);
+                SP(:,i+1+n) = x - sqrt(n/(1-W_0))*P_i(:,i); 
+            end
+
+        case 'CKF'
+            SP = zeros(n,2*n);
+            W = zeros(1,2*n);
+            W(1,1:end) = 1/(2*n); %Weights
+            
+            P_i = sqrtm(P);
+            for i=1:n
+                SP(:,i) = x + sqrt(n)*P_i(:,i);
+                SP(:,i+n) = x - sqrt(n)*P_i(:,i);              
+            end
+        otherwise
+            error('Incorrect type of sigma point')
+    end
+end
+
+
+
+
+%HA4 Part 2
+function [xfp, Pfp, Xp, Wp] = pfFilter(x_0, P_0, Y, proc_f, proc_Q, meas_h, meas_R, ...
+                             N, bResample, plotFunc)
+%PFFILTER Filters measurements Y using the SIS or SIR algorithms and a
+% state-space model.
+%
+% Input:
+%   x_0         [n x 1] Prior mean
+%   P_0         [n x n] Prior covariance
+%   Y           [m x K] Measurement sequence to be filtered
+%   proc_f      Handle for process function f(x_k-1)
+%   proc_Q      [n x n] process noise covariance
+%   meas_h      Handle for measurement model function h(x_k)
+%   meas_R      [m x m] measurement noise covariance
+%   N           Number of particles
+%   bResample   boolean false - no resampling, true - resampling
+%   plotFunc    Handle for plot function that is called when a filter
+%               recursion has finished.
+% Output:
+%   xfp         [n x K] Posterior means of particle filter 2x20
+%   Pfp         [n x n x K] Posterior error covariances of particle filter 2x2x20
+%   Xp          [n x N x K] Non-resampled Particles for posterior state distribution in times 1:K
+%   Wp          [N x K] Non-resampled weights for posterior state x in times 1:K
+% If you want to be a bit fancy, then only store and output the particles if the function
+% is called with more than 2 output arguments.
+
+%Sizes:
+n = size(x_0,1);
+m = size(Y,1);
+K = size(Y,2);
+
+%Init output:
+xfp = zeros(n,K);
+Pfp = zeros(n,n,K);
+Xp = zeros(n,N,K);
+Wp = zeros(N,K);
+
+%Draw samples and do first manually:
+Xp(:,:,1) = mvnrnd(x_0, P_0, N)';
+Wp(:,1) = ones(N,1)/N;
+
+%Assign as 'previous':
+prev_particle = Xp(:,:,1);
+prev_weight = Wp(:,1)';
+
+%Check if true
+if bResample
+    for i=1:K
+        %A
+        %Resample to get new particles and weights
+        [Xr, Wr, ~] = resampl(prev_particle, prev_weight );
+        %B
+        %Do one filter step:
+        [Xp(:,:,i), Wp_row] = pfFilterStep(Xr, Wr, Y(:,i), proc_f, proc_Q, meas_h, meas_R);
+       
+        %C
+        % Store the row as a column vector:
+        Wp(:,i) = Wp_row';
+        %Store for next iteration:
+        prev_particle = Xp(:,:,i);
+        prev_weight = Wp(:,i)';
+
+        %D
+        %Mean and cov:
+        xfp(:,i) = sum(prev_particle.*Wp_row , 2);
+        Pfp(:,:,i) = Wp_row .* (prev_particle-xfp(:,i)) * (prev_particle-xfp(:,i))';
+    end
+
+       
+else
+    for i=1:K
+        %Do one filter step:
+        [Xp(:,:,i), Wp_row] = pfFilterStep(prev_particle , prev_weight , Y(:,i), proc_f, proc_Q, meas_h, meas_R);
+        
+        % Store the row as a column vector:
+        Wp(:,i) = Wp_row';
+        
+        %Store for next iteration:
+        prev_particle = Xp(:,:,i);
+        prev_weight = Wp(:,i)';
+        
+        %Mean and cov:
+        xfp(:,i) = sum(prev_particle.*Wp_row , 2);
+        Pfp(:,:,i) = Wp_row .* (prev_particle-xfp(:,i)) * (prev_particle-xfp(:,i))';
+    end
+end
+   
+
+end
+
+function [Xr, Wr, j] = resampl(X, W)
+    %Sizes:
+    n = size(X,1);
+    N = size(W,2);
+    %Init output:
+    Xr = zeros(n,N);
+    Wr = zeros(1,N);
+    j = zeros(1,N);
+    %Draw numbers
+    unif = rand(1,N);
+    %Get our weights on a "line"
+    Wcum = cumsum(W);
+     
+    %Normalize them
+    index = Wcum/sum(W);
+ 
+    bins = [0 index];
+  
+    %Group unif into bins
+    j = discretize(unif, bins);
+    %Loop and compute the resampled particles and weights
+    for i=1:N
+        Xr(:,i) = X(:,j(1,i));
+        Wr(1,i) = 1/N;
+    end
+end
+
+function [X_k, W_k] = pfFilterStep(X_kmin1, W_kmin1, yk, proc_f, proc_Q, meas_h, meas_R)
+    %Sizes:
+    n = size(X_kmin1 , 1);
+    N = size(X_kmin1 , 2);
+    m = size(yk, 1);
+    
+    %Init output sizes:
+    X_k = zeros(n,N);
+    W_k = zeros(1,N);
+    
+    %Proposal density:
+    q = mvnrnd(proc_f(X_kmin1)', proc_Q)';
+    X_k = q;
+   
+    for i=1:N
+        likelihood = mvnpdf(yk, meas_h(X_k(:,i))' , meas_R);       
+        W_k(:,i) = W_kmin1(1,i).*likelihood';
+    end
+    
+    %Normalize weight:
+    W_k = W_k/sum(W_k);
+end
+
+
+%HA4 Part 1
+function [xs, Ps, xf, Pf, xp, Pp] = nonLinRTSsmoother(Y, x_0, P_0, f, T, Q, S, h, R, sigmaPoints, type)
+%NONLINRTSSMOOTHER Filters measurement sequence Y using a 
+% non-linear Kalman filter. 
+%
+%Input:
+%   Y           [m x N] Measurement sequence for times 1,...,N
+%   x_0         [n x 1] Prior mean for time 0
+%   P_0         [n x n] Prior covariance
+%   f                   Motion model function handle
+%   T                   Sampling time
+%   Q           [n x n] Process noise covariance
+%   S           [n x N] Sensor position vector sequence
+%   h                   Measurement model function handle
+%   R           [n x n] Measurement noise covariance
+%   sigmaPoints Handle to function that generates sigma points.
+%   type        String that specifies type of non-linear filter/smoother
+%
+%Output:
+%   xf          [n x N]     Filtered estimates for times 1,...,N
+%   Pf          [n x n x N] Filter error convariance
+%   xp          [n x N]     Predicted estimates for times 1,...,N
+%   Pp          [n x n x N] Filter error convariance
+%   xs          [n x N]     Smoothed estimates for times 1,...,N
+%   Ps          [n x n x N] Smoothing error convariance
+
+% your code here!
+% We have offered you functions that do the non-linear Kalman prediction and update steps.
+% Call the functions using
+% [xPred, PPred] = nonLinKFprediction(x_0, P_0, f, T, Q, sigmaPoints, type);
+% [xf, Pf] = nonLinKFupdate(xPred, PPred, Y, S, h, R, sigmaPoints, type);
+
+%Sizes
+m = size(Y,1);
+N = size(Y,2);
+n = size(P_0,1);
+
+% Initilize sizes for outputs
+xf = zeros(n,N);
+Pf = zeros(n,n,N);
+xp = zeros(n,N);
+Pp = zeros(n,n,N);
+xs = zeros(n,N);
+Ps = zeros(n,n,N);
+
+% First step manually:
+[xPred1, PPred1] = nonLinKFprediction(x_0, P_0, f, T, Q, sigmaPoints, type);
+xp(:,1) = xPred1;
+Pp(:,:,1) = PPred1;
+[xf1, Pf1] = nonLinKFupdate(xp(:,1), Pp(:,:,1), Y(:,1), S(:,1), h, R, sigmaPoints, type);
+xf(:,1) = xf1;
+Pf(:,:,1) = Pf1;     
+% Kalman:
+for i=2:N 
+    [xp(:,i), Pp(:,:,i)] = nonLinKFprediction(xf(:,i-1), Pf(:,:,i-1), f, T, Q, sigmaPoints, type); 
+    [xf(:,i), Pf(:,:,i)] = nonLinKFupdate(xp(:,i), Pp(:,:,i), Y(:,i), S(:,i), h, R, sigmaPoints, type);
+end
+%First step manually:
+xs(:,N) = xf(:,N);
+Ps(:,:,N) = Pf(:,:,N);
+%Smoothing:
+for i = N-1:-1:1
+    [xs(:,i), Ps(:,:,i)] =  nonLinRTSSupdate(xs(:,i+1), Ps(:,:,i+1), xf(:,i), Pf(:,:,i), xp(:,i+1),  Pp(:,:,i+1), f, T, sigmaPoints, type);
+end
+
+
+end
+
+function [xs, Ps] = nonLinRTSSupdate(xs_kplus1, ...
+                                     Ps_kplus1, ...
+                                     xf_k, ... 
+                                     Pf_k, ...
+                                     xp_kplus1, ...
+                                     Pp_kplus1, ...
+                                     f, ...
+                                     T, ...
+                                     sigmaPoints, ...
+                                     type)
+%NONLINRTSSUPDATE Calculates mean and covariance of smoothed state
+% density, using a non-linear Gaussian model.
+%
+%Input:
+%   xs_kplus1   Smooting estimate for state at time k+1
+%   Ps_kplus1   Smoothing error covariance for state at time k+1
+%   xf_k        Filter estimate for state at time k
+%   Pf_k        Filter error covariance for state at time k
+%   xp_kplus1   Prediction estimate for state at time k+1
+%   Pp_kplus1   Prediction error covariance for state at time k+1
+%   f           Motion model function handle
+%   T           Sampling time
+%   sigmaPoints Handle to function that generates sigma points.
+%   type        String that specifies type of non-linear filter/smoother
+%
+%Output:
+%   xs          Smoothed estimate of state at time k
+%   Ps          Smoothed error convariance for state at time k
+
+
+%Sizes
+n = size(xf_k,1);
+switch type
+        case 'EKF'
+            [fx,Fx] = f(xf_k, T);
+            Pk_kplus1_k = Pf_k * Fx';
+            Gk = Pf_k  * Fx' * inv(Pp_kplus1);
+            
+            xs = xf_k + Gk*(xs_kplus1 - fx);
+            Ps = Pf_k - Gk*(Pp_kplus1 - Ps_kplus1)*Gk';
+        case 'UKF'
+            [SP, W] = sigmaPoints(xf_k, Pf_k, 'UKF');
+            Pk_kplus1_k = zeros(n,n);
+            for i=1:((2*n)+1)
+                Pk_kplus1_k = Pk_kplus1_k + (SP(:,i) - xf_k)*(f(SP(:,i),T) - xp_kplus1)' * W(i);
+            end
+            
+            % Backward recursions in a Gaussian filter
+            Gk = Pk_kplus1_k * inv(Pp_kplus1);
+            xs = xf_k + Gk*(xs_kplus1 - xp_kplus1);
+            Ps = Pf_k - Gk*(Pp_kplus1 - Ps_kplus1)*Gk';
+        case 'CKF'
+            [SP, W] = sigmaPoints(xf_k, Pf_k, 'CKF');
+            
+            Pk_kplus1_k = zeros(n,n);
+            for i=1:(2*n)
+                 Pk_kplus1_k = Pk_kplus1_k + (SP(:,i) - xf_k)*(f(SP(:,i),T) - xp_kplus1)' * W(i);
+            end
+            % Backward recursions in a Gaussian filter
+            Gk = Pk_kplus1_k * inv(Pp_kplus1);
+            xs = xf_k + Gk*(xs_kplus1 - xp_kplus1);
+            Ps = Pf_k - Gk*(Pp_kplus1 - Ps_kplus1)*Gk';
+        otherwise
+            error('Incorrect type of non-linear Kalman filter')
+end
+end
+
+function [x, P] = nonLinKFprediction(x, P, f, T, Q, sigmaPoints, type)
+%NONLINKFPREDICTION calculates mean and covariance of predicted state
+%   density using a non-linear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   f           Motion model function handle
+%   T           Sampling time
+%   Q           [n x n] Process noise covariance
+%   sigmaPoints Handle to function that generates sigma points.
+%   type        String that specifies the type of non-linear filter
+%
+%Output:
+%   x           [n x 1] predicted state mean
+%   P           [n x n] predicted state covariance
+%
+
+    switch type
+        case 'EKF'
+
+            % Evaluate motion model
+            [fx, Fx] = f(x,T);
+            % State prediction
+            x = fx;
+            % Covariance prediciton
+            P = Fx*P*Fx' + Q;
+            % Make sure P is symmetric
+            P = 0.5*(P + P');
+
+        case 'UKF'
+
+            % Predict
+            [x, P] = predictMeanAndCovWithSigmaPoints(x, P, f, T, Q, sigmaPoints, type);
+
+            if min(eig(P))<=0
+                [v,e] = eig(P);
+                emin = 1e-3;
+                e = diag(max(diag(e),emin));
+                P = v*e*v';
+            end
+
+        case 'CKF'
+
+            % Predict
+            [x, P] = predictMeanAndCovWithSigmaPoints(x, P, f, T, Q, sigmaPoints, type);
+
+        otherwise
+            error('Incorrect type of non-linear Kalman filter')
+    end
+end
+
+function [x, P] = nonLinKFupdate(x, P, y, s, h, R, sigmaPoints, type)
+%NONLINKFUPDATE calculates mean and covariance of predicted state
+%   density using a non-linear Gaussian model.
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   y           [m x 1] measurement vector
+%   s           [2 x 1] sensor position vector
+%   h           Measurement model function handle
+%   R           [n x n] Measurement noise covariance
+%   sigmaPoints Handle to function that generates sigma points.
+%   type        String that specifies the type of non-linear filter
+%
+%Output:
+%   x           [n x 1] updated state mean
+%   P           [n x n] updated state covariance
+%
+
+
+switch type
+    case 'EKF'
+        
+        % Evaluate measurement model
+        [hx, Hx] = h(x,s);
+        
+        % Innovation covariance
+        S = Hx*P*Hx' + R;
+        % Kalman gain
+        K = (P*Hx')/S;
+        
+        % State update
+        x = x + K*(y - hx);
+        % Covariance update
+        P = P - K*S*K';
+        
+        % Make sure P is symmetric
+        P = 0.5*(P + P');
+        
+    case 'UKF'
+
+        % Update mean and covariance
+        [x, P] = updateMeanAndCovWithSigmaPoints(x, P, y, s, h, R, sigmaPoints, type);
+        
+        if min(eig(P))<=0
+            [v,e] = eig(P);
+            emin = 1e-3;
+            e = diag(max(diag(e),emin));
+            P = v*e*v';
+        end
+        
+    case 'CKF'
+
+        % Update mean and covariance
+        [x, P] = updateMeanAndCovWithSigmaPoints(x, P, y, s, h, R, sigmaPoints, type);
+        
+    otherwise
+        error('Incorrect type of non-linear Kalman filter')
+end
+
+end
+
+function [x, P] = predictMeanAndCovWithSigmaPoints(x, P, f, T, Q, sigmaPoints, type)
+%
+%PREDICTMEANANDCOVWITHSIGMAPOINTS computes the predicted mean and covariance
+%
+%Input:
+%   x           [n x 1] mean vector
+%   P           [n x n] covariance matrix 
+%   f           measurement model function handle
+%   T           sample time
+%   Q           [m x m] process noise covariance matrix
+%
+%Output:
+%   x           [n x 1] Updated mean
+%   P           [n x n] Updated covariance
+%
+
+    % Compute sigma points
+    [SP,W] = sigmaPoints(x, P, type);
+
+    % Dimension of state and number of sigma points
+    [n, N] = size(SP);
+
+    % Allocate memory
+    fSP = zeros(n,N);
+
+    % Predict sigma points
+    for i = 1:N
+        [fSP(:,i),~] = f(SP(:,i),T);
+    end
+
+    % Compute the predicted mean
+    x = sum(fSP.*repmat(W,[n, 1]),2);
+
+    % Compute predicted covariance
+    P = Q;
+    for i = 1:N
+        P = P + W(i)*(fSP(:,i)-x)*(fSP(:,i)-x)';
+    end
+
+    % Make sure P is symmetric
+    P = 0.5*(P + P');
+
+end
+
+function [x, P] = updateMeanAndCovWithSigmaPoints(x, P, y, s, h, R, sigmaPoints, type)
+%
+%UPDATEGAUSSIANWITHSIGMAPOINTS computes the updated mean and covariance
+%
+%Input:
+%   x           [n x 1] Prior mean
+%   P           [n x n] Prior covariance
+%   y           [m x 1] measurement
+%   s           [2 x 1] sensor position
+%   h           measurement model function handle
+%   R           [m x m] measurement noise covariance matrix
+%
+%Output:
+%   x           [n x 1] Updated mean
+%   P           [n x n] Updated covariance
+%
+
+    % Compute sigma points
+    [SP,W] = sigmaPoints(x, P, type);
+
+    % Dimension of measurement
+    m = size(R,1);
+
+    % Dimension of state and number of sigma points
+    [n, N] = size(SP);
+
+    % Predicted measurement
+    yhat = zeros(m,1);
+    hSP = zeros(m,N);
+    for i = 1:N
+        [hSP(:,i),~] = h(SP(:,i),s);
+        yhat = yhat + W(i)*hSP(:,i);
+    end
+
+    % Cross covariance and innovation covariance
+    Pxy = zeros(n,m);
+    S = R;
+    for i=1:N
+        Pxy = Pxy + W(i)*(SP(:,i)-x)*(hSP(:,i)-yhat)';
+        S = S + W(i)*(hSP(:,i)-yhat)*(hSP(:,i)-yhat)';
+    end
+
+    % Ensure symmetry
+    S = 0.5*(S+S');
+
+    % Updated mean
+    x = x+Pxy*(S\(y-yhat));
+    P = P - Pxy*(S\(Pxy'));
+
+    % Ensure symmetry
+    P = 0.5*(P+P');
+
+end
+
+
+

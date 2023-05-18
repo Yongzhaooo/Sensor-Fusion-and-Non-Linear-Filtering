@@ -57,6 +57,9 @@ j = 1:N;
             plotFunc(k, Xk, Xkold, j);
         end
 
+        xfp(:, k) = sum(Xk .* Wk, 2);
+        Pfp(:, :, k) = (Wk.*(Xk - xfp(:,k)))*(Xk - xfp(:,k))';
+        
         %If want resample:
         if bResample
             [Xk, Wk, j] = resampl(Xk, Wk);
@@ -65,8 +68,8 @@ j = 1:N;
         Xp(:, :, k) = Xk;
         Wp(:, k) = Wk;
         
-        xfp(:, k) = sum(Xk .* Wk, 2);
-        Pfp(:, :, k) = (Wk.*(Xk - xfp(:,k)))*(Xk - xfp(:,k))';
+%         xfp(:, k) = sum(Xk .* Wk, 2);
+%         Pfp(:, :, k) = (Wk.*(Xk - xfp(:,k)))*(Xk - xfp(:,k))';
         %Here Pfp I ask chatgpt to give me.
 %         %update Xkold
 %         Xkold = Xk;

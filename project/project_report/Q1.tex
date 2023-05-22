@@ -1,0 +1,54 @@
+\section{Q1: Choices of input and output}
+
+Task 1: Discuss pros and cons regarding this choice of input. Can you
+imagine a situation where this would not be a good choice? When would
+it be better to include angular velocities in the state vector? You do not
+need to provide a long discussion, but your statements/examples should
+be clearly explained.
+
+
+\textbf{Pros of selecting $u_k = w_k$ (using angular velocities as inputs):}
+
+\begin{enumerate}
+  \item Accuracy: Gyroscope measurements of angular velocities are typically more accurate and less prone to noise compared to other sensor measurements. Using them as inputs can improve the accuracy of the estimation process.
+  
+  \item High update rate: Gyroscopes usually provide measurements at a high sampling rate, allowing for more frequent updates to the estimation algorithm. This can lead to faster and more responsive estimation of the system's orientation.
+  
+  \item Reduced computational complexity: By using angular velocities as inputs, the dimensionality of the state vector is reduced. This simplifies the estimation algorithm and reduces computational requirements, leading to faster execution and lower resource consumption.
+  
+  \item Elimination of bias estimation: If the gyroscope measurements are known to be unbiased, using them as inputs eliminates the need to estimate gyroscope biases. This simplifies the estimation problem and reduces the number of parameters to estimate.
+\end{enumerate}
+
+\textbf{Cons of selecting $u_k = w_k$:}
+
+\begin{enumerate}
+  \item Limited observability: By using angular velocities as inputs, the estimation algorithm relies solely on the gyroscope measurements to estimate the system's orientation. This can result in limited observability, especially if the gyroscope measurements are affected by biases or inaccuracies. In such cases, incorporating additional sensor measurements may be necessary to improve observability.
+  
+  \item Susceptibility to gyro drift: Gyroscopes can experience drift over time, leading to errors in the estimated orientation. If the system operates for an extended period without any external reference or correction, the estimated orientation can gradually deviate from the true orientation.
+  
+  \item Lack of absolute reference: Using angular velocities as inputs does not provide an absolute reference for the system's orientation. The estimated orientation may drift over time, especially if there is no external measurement or reference available to correct for cumulative errors.
+  
+  \item Vulnerability to measurement disturbances: If the gyroscope measurements are affected by external disturbances, such as vibrations or shocks, the estimation process relying solely on these measurements may be more susceptible to inaccuracies and performance degradation.
+\end{enumerate}
+
+In summary, selecting $u_k = w_k$ (using angular velocities as inputs) offers advantages such as accuracy, high update rate, reduced computational complexity, and elimination of bias estimation. However, it may suffer from limited observability, gyro drift, lack of absolute reference, and vulnerability to measurement disturbances. The suitability of this choice depends on the specific system requirements, the quality of gyroscope measurements, and the availability of additional sensor measurements for improved estimation performance.
+
+
+
+\textbf{When would it be better to include angular velocities in the state vector?}
+
+Including angular velocities in the state vector can be beneficial in the following situations:
+
+\begin{enumerate}
+  \item Dynamic Systems: If the system being modeled exhibits complex dynamics that cannot be accurately captured solely by the measurements, incorporating angular velocities as state variables can provide a more comprehensive representation of the system's behavior. This is particularly useful when the system undergoes rapid changes or has nonlinear dynamics.
+  
+  \item Noisy Measurements: If the measurements of angular velocities are noisy or subject to significant disturbances, using them as state variables can help mitigate the impact of measurement uncertainties. By incorporating the measurements directly into the state vector, the estimation algorithm can account for the noise and improve the overall accuracy of the state estimation.
+  
+  \item Biased Measurements: In some cases, the measurements of angular velocities may suffer from biases due to sensor imperfections or environmental factors. By including angular velocities as state variables and estimating the biases, the estimation algorithm can compensate for these biases and provide more accurate results.
+  
+  \item System Identification: Including angular velocities as state variables can facilitate system identification and parameter estimation. By considering the dynamics of angular velocities within the state vector, it becomes possible to estimate system parameters, such as inertia properties or damping coefficients, along with the orientation.
+  
+  \item Integration with Other Sensors: Incorporating angular velocities in the state vector can enhance the fusion of multiple sensor modalities. By including the gyroscope measurements as state variables, they can be combined with measurements from other sensors, such as accelerometers or magnetometers, to improve the accuracy and reliability of the overall estimation process.
+\end{enumerate}
+
+It's important to note that the decision to include angular velocities in the state vector should consider the specific characteristics of the system, the quality of the measurements, and the computational complexity of the estimation algorithm. In some cases, the additional complexity and computational burden may outweigh the benefits, and it may be more suitable to rely solely on the measurements of angular velocities without including them in the state vector.

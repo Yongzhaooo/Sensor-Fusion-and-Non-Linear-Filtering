@@ -1,0 +1,30 @@
+% function startup()
+% % STARTUP  Load necessary java packages
+% 
+%   % Load appropriate java jar-files
+%   fname = fullfile(fileparts(mfilename('fullpath')), 'sensordata.jar');
+%   fprintf('Loading: %s\n', fname);
+%   javaaddpath(fname);
+% 
+% end
+
+function startup()
+% 设置IP地址
+address = '192.168.31.220'; % 替换为你想要使用的IP地址
+
+% 加载sensordata.jar
+jarPath = 'E:\ChalmersOnedrive\OneDrive - Chalmers\文档\chalmers\sensor fusion\SensorFusion\project\Sensorfusion smartphone\sensordata.jar';
+javaaddpath(jarPath);
+
+% 创建StreamSensorDataFile对象
+streamSensorDataFile = com.liu.sensordata.StreamSensorDataFile;
+
+% 调用broadcastFile方法来设置IP地址
+try
+    fname = java.io.File('your_logfile_path'); % 替换为实际的日志文件路径
+    port = 3400; % 根据需要指定端口
+    streamSensorDataFile.broadcastFile(fname, address, port);
+catch exception
+    fprintf('Error: %s\n', exception.message);
+end
+end

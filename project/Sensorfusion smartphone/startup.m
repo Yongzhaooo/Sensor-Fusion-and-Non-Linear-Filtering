@@ -5,4 +5,5 @@ function startup()
   fname = fullfile(fileparts(mfilename('fullpath')), 'sensordata.jar');
   fprintf('Loading: %s\n', fname);
   javaaddpath(fname);
+
 end

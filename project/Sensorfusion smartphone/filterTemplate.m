@@ -44,11 +44,12 @@ function [xhat, meas] = filterTemplate(calAcc, calGyr, calMag)
                 'orient', zeros(4, 0));
   try
     %% Create data link
-    server = StreamSensorDataReader(3400);
+    server = StreamSensorDataReader(3401);
     % Makes sure to resources are returned.
     sentinel = onCleanup(@() server.stop());
 
-    server.start();  % Start data reception.
+    % select IP here
+    server.start(1);  % Start data reception.
 
     % Used for visualization.
     figure(1);

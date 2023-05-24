@@ -1,0 +1,32 @@
+function plotHistograms(data, sensorName)
+    % 处理NaN值
+    dataX = data(1, 1:end-10);
+    dataX = dataX(~isnan(dataX));
+    dataY = data(2, 1:end-10);
+    dataY = dataY(~isnan(dataY));
+    dataZ = data(3, 1:end-10);
+    dataZ = dataZ(~isnan(dataZ));
+
+    % 计算均值和标准差
+    meanX = mean(dataX);
+    stdX = std(dataX);
+
+    meanY = mean(dataY);
+    stdY = std(dataY);
+    meanZ = mean(dataZ);
+    stdZ = std(dataZ);
+
+    % 绘制直方图
+    figure;
+    subplot(3,1,1);
+    histogram(dataX, 'Normalization', 'pdf');
+    title(sprintf('%s - X', sensorName));
+
+    subplot(3,1,2);
+    histogram(dataY, 'Normalization', 'pdf');
+    title(sprintf('%s - Y', sensorName));
+
+    subplot(3,1,3);
+    histogram(dataZ, 'Normalization', 'pdf');
+    title(sprintf('%s - Z', sensorName));
+end

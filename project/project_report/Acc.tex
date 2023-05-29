@@ -1,0 +1,128 @@
+\section{Accelerometer}
+
+\subsection{Task 6}
+
+The question here is similar to homework3 , the pre-function about calculating $ [Hx hx] $.
+
+The measurement model is $ y_k^a=Q^T(q_k)(g^0+f_k^a)+e_k^a $, in which we assume $ f_k^a = 0 $.Then the $ hx = Q^T(q_k) \cdot g^0 $, $ Hx = \frac{\partial{hx}}{\partial{q_k}} = \frac{dQ(q_k)}{dq} \cdot g^0$. In addition, the updating process is :
+
+\begin{equation}
+    \begin{aligned}
+        \hat{\textbf{x}}_{k|k}&=\hat{\textbf{x}}_{k|k-1}+\textbf{K}_k\textbf{v}_k\\
+        \textbf{P}_{k|k}&=\textbf{P}_{k|k-1}-\textbf{K}_{k}\textbf{S}_{k}\textbf{K}_{k}^{T}\\
+        &\text{where}\\
+        \textbf{K}_k&=\textbf{P}_{k|k-1}\textbf{H}_k^T\textbf{S}_k^{-1}\\
+        \textbf{v}_k&=\textbf{y}_k-\textbf{H}_k\hat{\textbf{x}}_{k|k-1}\\
+        \textbf{S}_k&=\textbf{H}_k\textbf{P}_{k|k-1}\textbf{H}_k^T+\textbf{R}_k\nonumber
+    \end{aligned}
+\end{equation}
+\textcolor{red}{need to add Hx function, copy from the mu\_g}
+
+The $\hat{\textbf{x}}_{k|k}$ and $ \textbf{P}_{k|k}  $ above are the return value of the function \texttt{mu\_g}.
+
+\subsection{Task 7}
+
+\textcolor{red}{need to modify the title and label}
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/7start.png}
+ \caption{Task7 Start figure}
+ \label{7start}
+\end{figure}
+
+Move the phone right and left at a slow speed repeatedly:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/rightleft.png}
+ \caption{Right left move }
+ \label{rightleft}
+\end{figure}
+
+Flip the phone to the right side and lay it down repeatedly:
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/flipright.png}
+ \caption{Flip right}
+ \label{flipright}
+\end{figure}
+
+Fastly flip it forward and back:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/forward.png}
+ \caption{Flip forward}
+ \label{flipforward}
+\end{figure}
+
+Fastly rotate it around $ \mathbf{y} $:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/rotatey.png}
+ \caption{Rotate around y}
+ \label{rotatey}
+\end{figure}
+
+Fastly go to right:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/goright.png}
+ \caption{Fastly go right}
+ \label{fastright}
+\end{figure}
+
+During the test process, we find that if the phone do not have a big acceleration on itself, the own estimate won't dift much. But once it has a huge acceleration that the force $ f_k^a $ can not be ignored, then the posture will significantly dift.
+
+
+\subsection{Task 8}
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/beginwithoutlier.png}
+ \caption{capital}
+ \label{label}
+\end{figure}
+
+set outlier range as 20\%:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/20range.png}
+ \caption{capital}
+ \label{label}
+\end{figure}
+
+We find that 20\% outlier range is too big that cannot fix the drift, so try to set the range as 10\%:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/new10begin.png}
+ \caption{capital}
+ \label{label}
+\end{figure}
+
+After short and fast right-left repeatly shake , the sesult shows the drift is fixed:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/10rangeshake.png}
+ \caption{capital}
+ \label{label}
+\end{figure}
+
+But after some violent shake, the result still says it is not good:
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/violent10.png}
+ \caption{capital}
+ \label{label}
+\end{figure}
+
+
+In conclusion, after updating the outlier detection and implementing a rejection threshold, we have observed that the current attitude estimation is able to mitigate the drift issue observed in previous experiments, as long as the acceleration is not excessively high. This outcome aligns with our expectations, as updates falling outside the acceptable range are rejected.
+
+However, we have also noticed that even with the implementation of this simple rejection algorithm, there is still some deviation in the attitude estimation after intense and multi-directional shaking acceleration. This can be attributed to the fact that the orientation estimation algorithm involves integrating accelerometer measurements over time to estimate orientation. Integration introduces cumulative errors, and even small inaccuracies in the accelerometer measurements can result in significant drift over time. Outlier rejection alone may not be sufficient to compensate for these integration errors and maintain accurate orientation estimates. 

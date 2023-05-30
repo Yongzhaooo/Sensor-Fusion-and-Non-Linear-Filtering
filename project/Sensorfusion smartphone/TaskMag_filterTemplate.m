@@ -41,9 +41,17 @@ g0 = [0.254171 0.157052 9.862452]';
 % The mean of mag -Z is -58.885704 
 % , the covariance of mag -Z is 0.340960 
 
-m0 = [0;sqrt((-4.973822)^2+3.863684^2); -58.885704];
+% m0 = [0;sqrt((-4.973822)^2+3.863684^2); -58.885704];
 
 Ra = diag([0.019724, 0.016096, 0.008445]); % From part 1 measurement
+
+% Rm = diag([0.303807, 0.311815, 0.340960]); 
+
+
+% m0 = mymag0(-1.040306, 22.151053, -53.429158);
+m0 = [         0;
+   22.1755;
+  -53.4292];
 
 Rm = diag([0.303807, 0.311815, 0.340960]); 
 
@@ -63,7 +71,7 @@ meas = struct('t', zeros(1, 0),...
     'orient', zeros(4, 0));
 try
     %% Create data link
-    server = StreamSensorDataReader(3401);
+    server = StreamSensorDataReader(3403);
     % Makes sure to resources are returned.
     sentinel = onCleanup(@() server.stop());
 

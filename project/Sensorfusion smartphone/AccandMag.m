@@ -101,17 +101,17 @@ try
         end
 
         gyr = data(1, 5:7)';
-        if ~any(isnan(gyr))  % Gyro measurements are available.
-            %update
-            [x, P] = tu_qw(x, P, gyr, 0.01, Rw);
-            %normalize
-            [x, P] = mu_normalizeQ(x, P);
-        else
-            %keep it
-            %to be honest, use this method, this else can be removed
-            x = x;
-            P = P;
-        end
+%         if ~any(isnan(gyr))  % Gyro measurements are available.
+%             %update
+%             [x, P] = tu_qw(x, P, gyr, 0.01, Rw);
+%             %normalize
+%             [x, P] = mu_normalizeQ(x, P);
+%         else
+%             %keep it
+%             %to be honest, use this method, this else can be removed
+%             x = x;
+%             P = P;
+%         end
 
 
 

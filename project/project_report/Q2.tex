@@ -5,9 +5,7 @@ In this task, I placed the phone on the table without any touch or movement.
 When the phone is placed flat on a table, the accelerometer should read the gravitational acceleration on the Z-axis, while the readings on the X and Y axes should be zero.
 The readings of the gyroscope should be zero in all three directions, while the magnetometer readings should reflect the magnetic field strength of the phone's current position.
 
-Just note myself: 3pm 5.24 from library
-
-Since the last moment I touched the screen to stop stream, so in calculation I should remove a little bit tail data.
+Since the last moment I touched the screen to stop stream, so in calculation I throwed the last 0.1 second data away to avoid disturbances.
 
 \subsection{True state}
 
@@ -32,7 +30,8 @@ Since the last moment I touched the screen to stop stream, so in calculation I s
  \label{mag}
 \end{figure}
 
-By observing the plots of the sensors, it can be noted that when the phone is placed flat on a table, the readings from all three sensors exhibit a stable trend without significant disturbances.
+Through observation of the sensor plots, it is evident that when the phone is placed flat on a table, the readings from all three sensors demonstrate a consistent and stable trend without notable disturbances.
+
 
 \subsection{Mean and covariance and histograms}
 
@@ -85,14 +84,12 @@ The mean of mag -Z is -57.647071
 
 
 
-The histogram of the accelerometer (acc) exhibits a shape close to a Gaussian distribution, with a small offset around the mean. This offset may be attributed to initial calibration errors present during sensor measurements. Considering the protrusion of the rear camera on my phone, the mean offset of the accelerometer is likely caused by the components of gravitational acceleration along the corresponding coordinate axes. Since the phone is unlikely to be placed on a table for measurements in future use, this error can be avoided. Therefore, it is reasonable to treat the noise in the accelerometer as Gaussian noise.
+The histogram of the accelerometer (acc) displays a distribution closely resembling a Gaussian shape, with a slight offset around the mean. This offset can likely be attributed to initial calibration errors during sensor measurements. Considering the protrusion of the rear camera on my phone, it is plausible that the mean offset of the accelerometer is influenced by the components of gravitational acceleration along the corresponding coordinate axes. As the phone is unlikely to be placed on a table for future measurements, this error can be mitigated. Therefore, it is reasonable to treat the accelerometer noise as Gaussian noise.
 
-The histogram of the gyroscope (gyro) does not perfectly match a Gaussian distribution. This discrepancy could be due to the gyroscope's measurement errors being extremely small. Even if there are some offsets, the histogram shape may not be as pronounced as a Gaussian distribution due to the minimal presence of noise.
-The noise in the gyroscope is extremely small. During the subsequent tuning process, it can be considered completely reliable, and its measurement model's noise can be set to zero.
+The histogram of the gyroscope (gyro) does not precisely align with a Gaussian distribution. This discrepancy may be due to the extremely small measurement errors of the gyroscope. Even if there are some offsets, the histogram shape may not exhibit a pronounced Gaussian distribution due to the minimal presence of noise. The noise in the gyroscope is exceptionally small, rendering it highly reliable. Therefore, during the subsequent tuning process, it can be assumed to have negligible measurement model noise and set to zero.
 
-
-The histogram of the magnetometer (mag) exhibits a shape similar to a Gaussian distribution but with an overall offset. This offset may be caused by environmental noise in the magnetic field or biases in the magnetometer.
-The magnetometer should be calibrated based on the current environment before each use, depending on the specific requirements of the subsequent content.
+The histogram of the magnetometer (mag) exhibits a shape resembling a Gaussian distribution, albeit with an overall offset. This offset could be influenced by environmental noise in the magnetic field or biases in the magnetometer. To ensure accurate measurements, it is recommended to calibrate the magnetometer based on the current environment before each use, taking into account the specific requirements of the subsequent content.
 
 
+In the subsequent experiments, I placed the mobile phone on a roll of paper to ensure that the mobile phone's XY plane was parallel to the table as much as possible. This also extended the measurement time. Therefore, new measurement values were used in the last few tasks, but they were all based on the \texttt{calculation} function.
 

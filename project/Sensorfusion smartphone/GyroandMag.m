@@ -89,16 +89,16 @@ try
 
         %change order, have a look
         acc = data(1, 2:4)';
-        if ~any(isnan(acc))  % Acc measurements are available.
-            if abs(norm(acc)-9.81) < 9.81*0.1 %set the range as 20%
-                accOut = 0;
-                % Update
-                [x, P] = mu_g(x, P, acc, Ra, g0);
-                [x, P] = mu_normalizeQ(x, P);
-            else
-                accOut = 1;
-            end
-        end
+%         if ~any(isnan(acc))  % Acc measurements are available.
+%             if abs(norm(acc)-9.81) < 9.81*0.1 %set the range as 20%
+%                 accOut = 0;
+%                 % Update
+%                 [x, P] = mu_g(x, P, acc, Ra, g0);
+%                 [x, P] = mu_normalizeQ(x, P);
+%             else
+%                 accOut = 1;
+%             end
+%         end
 
         gyr = data(1, 5:7)';
         if ~any(isnan(gyr))  % Gyro measurements are available.

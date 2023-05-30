@@ -35,7 +35,7 @@ myport =3401;
 m0 = mymag0(-6.187865, 17.388269, -56.170076);
 Rm = diag([0.353488, 0.382853, 0.584917]); 
 
-alpha = 0.01;
+alpha = 0.001;
 Lk = norm(m0);%initialize estimate value Lk
 % Lk = 0;
 
@@ -116,18 +116,18 @@ try
 
 
         mag = data(1, 8:10)';
-        if ~any(isnan(mag))
-            Lk = (1-alpha) * Lk + alpha * norm(mag);% prediction
-            if abs(norm(mag)-Lk) < 0.1 * Lk  % 10% range
-                % update
-                magOut = 0;
-                [x, P] = mu_m(x, P, mag, m0, Rm);
-                [x, P] = mu_normalizeQ(x, P);
-
-            else
-                magOut = 1;
-            end
-        end
+%         if ~any(isnan(mag))
+%             Lk = (1-alpha) * Lk + alpha * norm(mag);% prediction
+%             if abs(norm(mag)-Lk) < 0.1 * Lk  % 10% range
+%                 % update
+%                 magOut = 0;
+%                 [x, P] = mu_m(x, P, mag, m0, Rm);
+%                 [x, P] = mu_normalizeQ(x, P);
+% 
+%             else
+%                 magOut = 1;
+%             end
+%         end
 
         orientation = data(1, 18:21)';  % Google's orientation estimate.
 

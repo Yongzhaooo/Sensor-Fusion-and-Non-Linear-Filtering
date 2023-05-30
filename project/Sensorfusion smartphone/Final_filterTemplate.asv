@@ -29,13 +29,17 @@ nx = 4;   % Assuming that you use q as state variable.
 
 % Add your filter settings here.
 Rw = diag([0.001220,0.000731,0.000493]); % gyro covariance
+
 g0 = [0.219950 -0.028492 9.863996]';
 Ra = diag([0.011359, 0.012691, 0.022681]); % acc covariance
+
+
 myport =3401;
 m0 = mymag0(-6.187865, 17.388269, -56.170076);
+
 Rm = diag([0.353488, 0.382853, 0.584917]); 
 
-alpha = 0.01;
+alpha = 0.001;
 Lk = norm(m0);%initialize estimate value Lk
 % Lk = 0;
 

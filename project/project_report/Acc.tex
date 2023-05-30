@@ -2,27 +2,32 @@
 
 \subsection{Task 6}
 
-The question here is similar to homework3 , the pre-function about calculating $ [Hx hx] $.
+The question here is similar to homework3 , the pre-function about calculating $ [Hx  ; hx] $.
 
 The measurement model is $ y_k^a=Q^T(q_k)(g^0+f_k^a)+e_k^a $, in which we assume $ f_k^a = 0 $.Then the $ hx = Q^T(q_k) \cdot g^0 $, $ Hx = \frac{\partial{hx}}{\partial{q_k}} = \frac{dQ(q_k)}{dq} \cdot g^0$. In addition, the updating process is :
 
 \begin{equation}
     \begin{aligned}
-        \hat{\textbf{x}}_{k|k}&=\hat{\textbf{x}}_{k|k-1}+\textbf{K}_k\textbf{v}_k\\
-        \textbf{P}_{k|k}&=\textbf{P}_{k|k-1}-\textbf{K}_{k}\textbf{S}_{k}\textbf{K}_{k}^{T}\\
+        \hat{\mathbf{x}}_{k|k}&=\hat{\mathbf{x}}_{k|k-1}+\mathbf{K}_k\mathbf{v}_k\\
+        \mathbf{P}_{k|k}&=\mathbf{P}_{k|k-1}-\mathbf{K}_{k}\mathbf{S}_{k}\mathbf{K}_{k}^{T}\\
         &\text{where}\\
-        \textbf{K}_k&=\textbf{P}_{k|k-1}\textbf{H}_k^T\textbf{S}_k^{-1}\\
-        \textbf{v}_k&=\textbf{y}_k-\textbf{H}_k\hat{\textbf{x}}_{k|k-1}\\
-        \textbf{S}_k&=\textbf{H}_k\textbf{P}_{k|k-1}\textbf{H}_k^T+\textbf{R}_k\nonumber
+        & Q = Qq(x),
+        \mathbf{h}  = Q'\cdot \mathbf(g)^0;\\
+&[Q0, \quad Q1, \quad Q2,\quad  Q3] = dQqdq(x);\\
+&\mathbf{H} = [Q0'\mathbf(g)^0 \quad Q1'\mathbf(g)^0 \quad Q2'\mathbf(g)^0 \quad Q3'\mathbf(g)^0];\\
+        &\mathbf{K}_k=\mathbf{P}_{k|k-1}\mathbf{H}_k^T\mathbf{S}_k^{-1}\\
+        &\mathbf{v}_k=\mathbf{y}_k-\mathbf{H}_k\hat{\mathbf{x}}_{k|k-1}\\
+        &\mathbf{S}_k=\mathbf{H}_k\mathbf{P}_{k|k-1}\mathbf{H}_k^T+\mathbf{R}_k\nonumber
     \end{aligned}
 \end{equation}
-\textcolor{red}{need to add Hx function, copy from the mu\_g}
 
-The $\hat{\textbf{x}}_{k|k}$ and $ \textbf{P}_{k|k}  $ above are the return value of the function \texttt{mu\_g}.
+
+
+The $\hat{\mathbf{x}}_{k|k}$ and $ \mathbf{P}_{k|k}  $ above are the return value of the function \texttt{mu\_g}.
 
 \subsection{Task 7}
 
-\textcolor{red}{need to modify the title and label}
+
 \begin{figure}[H]
  \centering
  \includegraphics[width=0.6\textwidth]{images/7start.png}
@@ -74,7 +79,7 @@ Fastly go to right:
  \label{fastright}
 \end{figure}
 
-During the test process, we find that if the phone do not have a big acceleration on itself, the own estimate won't dift much. But once it has a huge acceleration that the force $ f_k^a $ can not be ignored, then the posture will significantly dift.
+During the testing process, we have observed that if the phone does not experience significant acceleration, its own orientation estimate will not drift significantly. However, when the phone undergoes a substantial acceleration that cannot be ignored, such as the force $ f_k^a $, the estimated posture will exhibit significant drift.
 
 
 \subsection{Task 8}
@@ -82,16 +87,16 @@ During the test process, we find that if the phone do not have a big acceleratio
 \begin{figure}[H]
  \centering
  \includegraphics[width=0.6\textwidth]{images/beginwithoutlier.png}
- \caption{capital}
+ \caption{20\% range - begin}
  \label{label}
 \end{figure}
 
-set outlier range as 20\%:
+Set outlier range as 20\%:
 
 \begin{figure}[H]
  \centering
  \includegraphics[width=0.6\textwidth]{images/20range.png}
- \caption{capital}
+ \caption{20\% range - end}
  \label{label}
 \end{figure}
 
@@ -100,16 +105,16 @@ We find that 20\% outlier range is too big that cannot fix the drift, so try to 
 \begin{figure}[H]
  \centering
  \includegraphics[width=0.6\textwidth]{images/new10begin.png}
- \caption{capital}
+ \caption{10\% range - begin}
  \label{label}
 \end{figure}
 
-After short and fast right-left repeatly shake , the sesult shows the drift is fixed:
+After performing rapid back-and-forth shaking of the phone, it appears that the previous drift issue has been mostly resolved.
 
 \begin{figure}[H]
  \centering
  \includegraphics[width=0.6\textwidth]{images/10rangeshake.png}
- \caption{capital}
+ \caption{10\% range - end}
  \label{label}
 \end{figure}
 

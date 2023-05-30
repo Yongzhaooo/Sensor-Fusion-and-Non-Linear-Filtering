@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.15.0 (TeX Live 2022)  (format=lualatex 2023.3.7)  29 MAY 2023 12:41
+This is LuaHBTeX, Version 1.15.0 (TeX Live 2022)  (format=lualatex 2023.3.7)  30 MAY 2023 03:25
  system commands enabled.
  file:line:error style messages enabled.
 **"e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/SSY281Template"
@@ -442,188 +442,238 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 68.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1
 
-{d:/software/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Q1.tex" [2] [3]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Q2.tex"
-<images/acc.png, id=18, 749.80125pt x 595.47469pt>
+{d:/software/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Q1.tex") ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Q2.tex" [2]
+<images/acc.png, id=15, 749.80125pt x 595.47469pt>
 File: images/acc.png Graphic file (type png)
 <use images/acc.png>
-Package luatex.def Info: images/acc.png  used on input line 16.
+Package luatex.def Info: images/acc.png  used on input line 14.
 (luatex.def)             Requested size: 292.77629pt x 232.51585pt.
- [4]
-<images/gyroscope.png, id=22, 782.17218pt x 603.75563pt>
+<images/gyroscope.png, id=16, 782.17218pt x 603.75563pt>
 File: images/gyroscope.png Graphic file (type png)
 <use images/gyroscope.png>
-Package luatex.def Info: images/gyroscope.png  used on input line 23.
+Package luatex.def Info: images/gyroscope.png  used on input line 21.
 (luatex.def)             Requested size: 292.77629pt x 225.99324pt.
-<images/magnetometers.png, id=23, 754.31813pt x 609.02531pt>
+ [3<./images/acc.png>]
+<images/magnetometers.png, id=21, 754.31813pt x 609.02531pt>
 File: images/magnetometers.png Graphic file (type png)
 <use images/magnetometers.png>
-Package luatex.def Info: images/magnetometers.png  used on input line 30.
+Package luatex.def Info: images/magnetometers.png  used on input line 28.
 (luatex.def)             Requested size: 292.77629pt x 236.37587pt.
- [5<./images/acc.png><./images/gyroscope.png>]
-<images/histogramacc.png, id=28, 754.31813pt x 586.44093pt>
+ [4<./images/gyroscope.png><./images/magnetometers.png>]
+<images/histogramacc.png, id=25, 754.31813pt x 586.44093pt>
 File: images/histogramacc.png Graphic file (type png)
 <use images/histogramacc.png>
-Package luatex.def Info: images/histogramacc.png  used on input line 41.
+Package luatex.def Info: images/histogramacc.png  used on input line 40.
 (luatex.def)             Requested size: 292.77629pt x 227.61038pt.
- [6<./images/magnetometers.png>]
-<images/histogramgyroscope.png, id=32, 746.03719pt x 586.44093pt>
+<images/histogramgyroscope.png, id=26, 746.03719pt x 586.44093pt>
 File: images/histogramgyroscope.png Graphic file (type png)
 <use images/histogramgyroscope.png>
-Package luatex.def Info: images/histogramgyroscope.png  used on input line 54.
+Package luatex.def Info: images/histogramgyroscope.png  used on input line 53.
 (luatex.def)             Requested size: 292.77629pt x 230.14278pt.
- [7<./images/histogramacc.png>]
-<images/hismagnetometer.png, id=36, 730.98094pt x 584.93532pt>
+ [5<./images/histogramacc.png>]
+<images/hismagnetometer.png, id=30, 730.98094pt x 584.93532pt>
 File: images/hismagnetometer.png Graphic file (type png)
 <use images/hismagnetometer.png>
-Package luatex.def Info: images/hismagnetometer.png  used on input line 71.
+Package luatex.def Info: images/hismagnetometer.png  used on input line 70.
 (luatex.def)             Requested size: 292.77629pt x 234.28236pt.
- [8<./images/histogramgyroscope.png>] [9<./images/hismagnetometer.png>]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Q3.tex"
+ [6<./images/histogramgyroscope.png>] [7<./images/hismagnetometer.png>]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Q3.tex"
 Missing character: There is no Δ (U+0394) in font cmmi12!
 Missing character: There is no Δ (U+0394) in font cmmi12!
 Missing character: There is no Δ (U+0394) in font cmmi12!
 Missing character: There is no Δ (U+0394) in font cmmi12!
-
-Overfull \hbox (18.49551pt too wide) in paragraph at lines 14--16
-[]\TU/lmr/m/n/12 Ap-ply-ing the in-te-gral on the left side: $\OML/cmm/m/it/12 q\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 t[]\OT1/cmr/m/n/12 ) \OMS/cmsy/m/n/12 ^^@ \OML/cmm/m/it/12 q\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 t[]\OT1/cmr/m/n/12 ) = []\OML/cmm/m/it/12 S\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 ![] \OT1/cmr/m/n/12 + \OML/cmm/m/it/12 v[]\OT1/cmr/m/n/12 ) [][] \OML/cmm/m/it/12 q\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 t\OT1/cmr/m/n/12 )\OML/cmm/m/it/12 dt:$ 
+[8]
+Overfull \hbox (7.94563pt too wide) in paragraph at lines 56--57
+[]\TU/lmr/m/n/12 In the func-tion \TU/lmtt/m/n/12 Task5_filterTemple\TU/lmr/m/n/12 , I uti-lized the \TU/lmtt/m/n/12 tu_qw  \TU/lmr/m/n/12 and \TU/lmtt/m/n/12 mu_normalizeQ
  []
 
-Missing character: There is no Δ (U+0394) in font cmmi12!
-Missing character: There is no Δ (U+0394) in font cmmi12!
-Missing character: There is no ≈ (U+2248) in font cmr12!
-Missing character: There is no Δ (U+0394) in font cmmi12!
-Missing character: There is no Δ (U+0394) in font cmmi12!
-Missing character: There is no Δ (U+0394) in font cmmi12!
-Missing character: There is no Δ (U+0394) in font cmmi12!
-[10]
-Overfull \hbox (1.11763pt too wide) in paragraph at lines 51--52
-[]\TU/lmr/m/n/12 In the func-tion \TU/lmtt/m/n/12 Task5_filterTemple\TU/lmr/m/n/12 , I ap-plied the \TU/lmtt/m/n/12 tu_qw \TU/lmr/m/n/12 and \TU/lmtt/m/n/12 mu_normalizeQ
- []
-
-<images/beginning.png, id=54, 589.4522pt x 380.92313pt>
+[9]
+<images/beginning.png, id=49, 589.4522pt x 380.92313pt>
 File: images/beginning.png Graphic file (type png)
 <use images/beginning.png>
-Package luatex.def Info: images/beginning.png  used on input line 63.
+Package luatex.def Info: images/beginning.png  used on input line 67.
 (luatex.def)             Requested size: 125.47737pt x 81.08313pt.
-<images/drift1.png, id=55, 576.65437pt x 447.17062pt>
+<images/drift1.png, id=50, 576.65437pt x 447.17062pt>
 File: images/drift1.png Graphic file (type png)
 <use images/drift1.png>
-Package luatex.def Info: images/drift1.png  used on input line 69.
+Package luatex.def Info: images/drift1.png  used on input line 73.
 (luatex.def)             Requested size: 125.47737pt x 97.29976pt.
-<images/drift2.png, id=56, 565.36218pt x 452.4403pt>
+<images/drift2.png, id=51, 565.36218pt x 452.4403pt>
 File: images/drift2.png Graphic file (type png)
 <use images/drift2.png>
-Package luatex.def Info: images/drift2.png  used on input line 75.
+Package luatex.def Info: images/drift2.png  used on input line 79.
 (luatex.def)             Requested size: 125.47737pt x 100.41394pt.
-[11]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Acc.tex"
-<images/7start.png, id=62, 526.96875pt x 444.15938pt>
+) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Acc.tex" [10<./images/beginning.png><./images/drift1.png><./images/drift2.png>]
+<images/7start.png, id=56, 526.96875pt x 444.15938pt>
 File: images/7start.png Graphic file (type png)
 <use images/7start.png>
-Package luatex.def Info: images/7start.png  used on input line 28.
+Package luatex.def Info: images/7start.png  used on input line 33.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [12<./images/beginning.png><./images/drift1.png><./images/drift2.png>]
-<images/rightleft.png, id=66, 526.96875pt x 444.15938pt>
+<images/rightleft.png, id=57, 526.96875pt x 444.15938pt>
 File: images/rightleft.png Graphic file (type png)
 <use images/rightleft.png>
-Package luatex.def Info: images/rightleft.png  used on input line 37.
+Package luatex.def Info: images/rightleft.png  used on input line 42.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-<images/flipright.png, id=67, 526.96875pt x 444.15938pt>
+<images/flipright.png, id=58, 526.96875pt x 444.15938pt>
 File: images/flipright.png Graphic file (type png)
 <use images/flipright.png>
-Package luatex.def Info: images/flipright.png  used on input line 45.
+Package luatex.def Info: images/flipright.png  used on input line 50.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [13<./images/7start.png><./images/rightleft.png>]
-<images/forward.png, id=71, 526.96875pt x 444.15938pt>
+ [11<./images/7start.png><./images/rightleft.png>]
+<images/forward.png, id=63, 526.96875pt x 444.15938pt>
 File: images/forward.png Graphic file (type png)
 <use images/forward.png>
-Package luatex.def Info: images/forward.png  used on input line 54.
+Package luatex.def Info: images/forward.png  used on input line 59.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-<images/rotatey.png, id=72, 526.96875pt x 444.15938pt>
+<images/rotatey.png, id=64, 526.96875pt x 444.15938pt>
 File: images/rotatey.png Graphic file (type png)
 <use images/rotatey.png>
-Package luatex.def Info: images/rotatey.png  used on input line 63.
+Package luatex.def Info: images/rotatey.png  used on input line 68.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [14<./images/flipright.png><./images/forward.png>]
-<images/goright.png, id=77, 526.96875pt x 444.15938pt>
+ [12<./images/flipright.png><./images/forward.png>]
+<images/goright.png, id=68, 526.96875pt x 444.15938pt>
 File: images/goright.png Graphic file (type png)
 <use images/goright.png>
-Package luatex.def Info: images/goright.png  used on input line 72.
+Package luatex.def Info: images/goright.png  used on input line 77.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-<images/beginwithoutlier.png, id=78, 526.96875pt x 444.15938pt>
+<images/beginwithoutlier.png, id=69, 526.96875pt x 444.15938pt>
 File: images/beginwithoutlier.png Graphic file (type png)
 <use images/beginwithoutlier.png>
-Package luatex.def Info: images/beginwithoutlier.png  used on input line 84.
+Package luatex.def Info: images/beginwithoutlier.png  used on input line 89.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [15<./images/rotatey.png><./images/goright.png>]
-<images/20range.png, id=82, 526.96875pt x 444.15938pt>
+ [13<./images/rotatey.png><./images/goright.png>]
+<images/20range.png, id=73, 526.96875pt x 444.15938pt>
 File: images/20range.png Graphic file (type png)
 <use images/20range.png>
-Package luatex.def Info: images/20range.png  used on input line 93.
+Package luatex.def Info: images/20range.png  used on input line 98.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-<images/new10begin.png, id=83, 526.96875pt x 444.15938pt>
+<images/new10begin.png, id=74, 526.96875pt x 444.15938pt>
 File: images/new10begin.png Graphic file (type png)
 <use images/new10begin.png>
-Package luatex.def Info: images/new10begin.png  used on input line 102.
+Package luatex.def Info: images/new10begin.png  used on input line 107.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [16<./images/beginwithoutlier.png><./images/20range.png>]
-<images/10rangeshake.png, id=87, 526.96875pt x 444.15938pt>
+ [14<./images/beginwithoutlier.png><./images/20range.png>]
+<images/10rangeshake.png, id=78, 526.96875pt x 444.15938pt>
 File: images/10rangeshake.png Graphic file (type png)
 <use images/10rangeshake.png>
-Package luatex.def Info: images/10rangeshake.png  used on input line 111.
+Package luatex.def Info: images/10rangeshake.png  used on input line 116.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-<images/violent10.png, id=88, 526.96875pt x 444.15938pt>
+<images/violent10.png, id=79, 526.96875pt x 444.15938pt>
 File: images/violent10.png Graphic file (type png)
 <use images/violent10.png>
-Package luatex.def Info: images/violent10.png  used on input line 120.
+Package luatex.def Info: images/violent10.png  used on input line 125.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [17<./images/new10begin.png><./images/10rangeshake.png>]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Mag.tex" [18<./images/violent10.png>]
-<images/magbegin.png, id=95, 526.96875pt x 444.15938pt>
+ [15<./images/new10begin.png><./images/10rangeshake.png>]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Mag.tex" [16<./images/violent10.png>]
+<images/magbegin.png, id=86, 526.96875pt x 444.15938pt>
 File: images/magbegin.png Graphic file (type png)
 <use images/magbegin.png>
-Package luatex.def Info: images/magbegin.png  used on input line 27.
+Package luatex.def Info: images/magbegin.png  used on input line 13.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [19<./images/magbegin.png>]
-<images/maggentle.png, id=99, 526.96875pt x 444.15938pt>
-File: images/maggentle.png Graphic file (type png)
-<use images/maggentle.png>
-Package luatex.def Info: images/maggentle.png  used on input line 36.
-(luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-<images/rotatebesidecomputer.png, id=100, 526.96875pt x 444.15938pt>
+<images/rotatebesidecomputer.png, id=87, 526.96875pt x 444.15938pt>
 File: images/rotatebesidecomputer.png Graphic file (type png)
 <use images/rotatebesidecomputer.png>
-Package luatex.def Info: images/rotatebesidecomputer.png  used on input line 47.
+Package luatex.def Info: images/rotatebesidecomputer.png  used on input line 25.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [20<./images/maggentle.png>]
-<images/biasmag.png, id=104, 526.96875pt x 444.15938pt>
-File: images/biasmag.png Graphic file (type png)
-<use images/biasmag.png>
-Package luatex.def Info: images/biasmag.png  used on input line 57.
-(luatex.def)             Requested size: 250.95476pt x 211.52007pt.
- [21<./images/rotatebesidecomputer.png><./images/biasmag.png>]
-<images/returnmag.png, id=109, 526.96875pt x 444.15938pt>
+ [17<./images/magbegin.png>]
+<images/returnmag.png, id=91, 526.96875pt x 444.15938pt>
 File: images/returnmag.png Graphic file (type png)
 <use images/returnmag.png>
-Package luatex.def Info: images/returnmag.png  used on input line 66.
+Package luatex.def Info: images/returnmag.png  used on input line 35.
 (luatex.def)             Requested size: 250.95476pt x 211.52007pt.
-) [22<./images/returnmag.png>] ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/SSY281Template.aux")
+ [18<./images/rotatebesidecomputer.png><./images/returnmag.png>]
+<images/alpha01.png, id=95, 526.96875pt x 444.15938pt>
+File: images/alpha01.png Graphic file (type png)
+<use images/alpha01.png>
+Package luatex.def Info: images/alpha01.png  used on input line 61.
+(luatex.def)             Requested size: 250.95476pt x 211.52007pt.
+<images/alpha001.png, id=96, 526.96875pt x 444.15938pt>
+File: images/alpha001.png Graphic file (type png)
+<use images/alpha001.png>
+Package luatex.def Info: images/alpha001.png  used on input line 71.
+(luatex.def)             Requested size: 250.95476pt x 211.52007pt.
+ [19<./images/alpha01.png>]
+<images/alpha0.01.png, id=102, 526.96875pt x 444.15938pt>
+File: images/alpha0.01.png Graphic file (type png)
+<use images/alpha0.01.png>
+Package luatex.def Info: images/alpha0.01.png  used on input line 80.
+(luatex.def)             Requested size: 250.95476pt x 211.52007pt.
+ [20<./images/alpha001.png><./images/alpha0.01.png>]) ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/Task12.tex"
+<images/allsensors1.png, id=106, 821.31844pt x 705.38531pt>
+File: images/allsensors1.png Graphic file (type png)
+<use images/allsensors1.png>
+Package luatex.def Info: images/allsensors1.png  used on input line 17.
+(luatex.def)             Requested size: 292.77629pt x 251.44144pt.
+ [21]
+<images/allsensors2.png, id=111, 821.31844pt x 700.86844pt>
+File: images/allsensors2.png Graphic file (type png)
+<use images/allsensors2.png>
+Package luatex.def Info: images/allsensors2.png  used on input line 24.
+(luatex.def)             Requested size: 292.77629pt x 249.83134pt.
+ [22<./images/allsensors1.png>]
+<images/allsensor3.png, id=115, 821.31844pt x 700.86844pt>
+File: images/allsensor3.png Graphic file (type png)
+<use images/allsensor3.png>
+Package luatex.def Info: images/allsensor3.png  used on input line 31.
+(luatex.def)             Requested size: 292.77629pt x 249.83134pt.
+ [23<./images/allsensors2.png><./images/allsensor3.png>]
+<images/accgyro.png, id=119, 821.31844pt x 652.68843pt>
+File: images/accgyro.png Graphic file (type png)
+<use images/accgyro.png>
+Package luatex.def Info: images/accgyro.png  used on input line 42.
+(luatex.def)             Requested size: 292.77629pt x 232.65712pt.
+<images/accgyro2.png, id=120, 820.56563pt x 651.93562pt>
+File: images/accgyro2.png Graphic file (type png)
+<use images/accgyro2.png>
+Package luatex.def Info: images/accgyro2.png  used on input line 53.
+(luatex.def)             Requested size: 292.77629pt x 232.60762pt.
+ [24<./images/accgyro.png>]
+<images/accgyro1.png, id=124, 821.31844pt x 658.71094pt>
+File: images/accgyro1.png Graphic file (type png)
+<use images/accgyro1.png>
+Package luatex.def Info: images/accgyro1.png  used on input line 61.
+(luatex.def)             Requested size: 292.77629pt x 234.8039pt.
+<images/ag2.png, id=125, 820.56563pt x 654.19406pt>
+File: images/ag2.png Graphic file (type png)
+<use images/ag2.png>
+Package luatex.def Info: images/ag2.png  used on input line 69.
+(luatex.def)             Requested size: 292.77629pt x 233.41342pt.
+ [25<./images/accgyro2.png><./images/accgyro1.png>]
+<images/accmag.png, id=129, 820.56563pt x 655.69969pt>
+File: images/accmag.png Graphic file (type png)
+<use images/accmag.png>
+Package luatex.def Info: images/accmag.png  used on input line 80.
+(luatex.def)             Requested size: 292.77629pt x 233.95062pt.
+ [26<./images/ag2.png>]
+<images/Gyroandmag.png, id=133, 821.31844pt x 706.89093pt>
+File: images/Gyroandmag.png Graphic file (type png)
+<use images/Gyroandmag.png>
+Package luatex.def Info: images/Gyroandmag.png  used on input line 94.
+(luatex.def)             Requested size: 292.77629pt x 251.97812pt.
+ [27<./images/accmag.png>]
+<images/gyromagflat.png, id=137, 821.31844pt x 694.09312pt>
+File: images/gyromagflat.png Graphic file (type png)
+<use images/gyromagflat.png>
+Package luatex.def Info: images/gyromagflat.png  used on input line 101.
+(luatex.def)             Requested size: 292.77629pt x 247.41621pt.
+ [28<./images/Gyroandmag.png>]) [29<./images/gyromagflat.png>] ("e:/ChalmersOnedrive/OneDrive - Chalmers/文档/chalmers/sensor fusion/SensorFusion/project/project_report/SSY281Template.aux")
 
 LaTeX Warning: There were multiply-defined labels.
 
 )
 
 Here is how much of LuaTeX's memory you used:
- 8864 strings out of 477785
+ 9018 strings out of 477785
  100000,662416 words of node,token memory allocated
- 510 words of node memory still in use:
-   6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 1 sub_mlist, 1 glyph, 8 attribute, 55 glue_spec, 8 attribute_list, 1 write nodes
-   avail lists: 2:562,3:150,4:40,5:337,6:45,7:5427,8:43,9:599,10:13,11:608
- 28992 multiletter control sequences out of 65536+600000
- 69 fonts using 3585635 bytes
- 55i,11n,61p,816b,563s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmmono12-regular.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman12-italic.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman10-italic.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman12-bold.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman12-regular.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman17-regular.otf><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on SSY281Template.pdf (22 pages, 571632 bytes).
+ 555 words of node memory still in use:
+   6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 1 sub_mlist, 1 glyph, 18 attribute, 56 glue_spec, 18 attribute_list, 1 write nodes
+   avail lists: 2:509,3:134,4:28,5:268,6:37,7:4707,8:68,9:587,10:13,11:532
+ 29073 multiletter control sequences out of 65536+600000
+ 73 fonts using 3613407 bytes
+ 55i,10n,61p,817b,567s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmmono12-regular.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman10-italic.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman12-bold.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman12-regular.otf><d:/software/texlive/2022/texmf-dist/fonts/opentype/public/lm/lmroman17-regular.otf><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><d:/software/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
+Output written on SSY281Template.pdf (29 pages, 1127876 bytes).
 
-PDF statistics: 186 PDF objects out of 1000 (max. 8388607)
- 106 compressed objects within 2 object streams
+PDF statistics: 211 PDF objects out of 1000 (max. 8388607)
+ 116 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 131072)
  1 words of extra memory for PDF output out of 10000 (max. 100000000)
 

@@ -1,5 +1,5 @@
 function plotHistograms(data, sensorName)
-    % 处理NaN值
+    % NaN
     dataX = data(1, 1:end-10);
     dataX = dataX(~isnan(dataX));
     dataY = data(2, 1:end-10);
@@ -7,7 +7,7 @@ function plotHistograms(data, sensorName)
     dataZ = data(3, 1:end-10);
     dataZ = dataZ(~isnan(dataZ));
 
-    % 计算均值和标准差
+    % mean and std
     meanX = mean(dataX);
     stdX = std(dataX);
     fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
@@ -24,7 +24,7 @@ function plotHistograms(data, sensorName)
     stdZ = std(dataZ);
     fprintf('The mean of %s -Z is %f \n, the covariance of %s -Z is %f \n\n',...
         sensorName, meanZ, sensorName, stdZ);
-    % 绘制直方图
+    % histogram
     figure;
     subplot(3,1,1);
     histogram(dataX, 'Normalization', 'pdf');

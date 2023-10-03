@@ -7,6 +7,8 @@ This repository includes my homeworks and the smartphone project, a piece of wor
 
 Upload them basically for searching master thesis (well, I guess HR won't check them anyway)
 
+---
+
 DON'T NOT copy the use the codes directly!
 
 There are some minor mistakes I haven't fixed (Fixed in discussion and in report, so, I can say I surely mastered every part of the course)
